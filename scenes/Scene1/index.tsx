@@ -202,8 +202,14 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <directionalLight position={[5, 8, 5]} intensity={0.1} />
 
       {/* Fire glow lights - optimized for mobile */}
-      <pointLight position={[0, 0, -12]} intensity={7} color="#ff4400" distance={50} decay={2} />
-      <pointLight position={[0, 2, -12]} intensity={3} color="#ff8800" distance={30} decay={2} />
+      <pointLight position={[0, 0, -12]} intensity={isMobile ? 7 : 9} color="#ff4400" distance={50} decay={2} />
+      <pointLight position={[0, 2, -12]} intensity={isMobile ? 3 : 5} color="#ff8800" distance={30} decay={2} />
+      {!isMobile && (
+        <>
+          <pointLight position={[0, -1, -12]} intensity={4} color="#ff6600" distance={40} decay={2} />
+          <pointLight position={[0, 1, -12]} intensity={3} color="#ffaa00" distance={35} decay={2} />
+        </>
+      )}
 
       {/* Fire in the distance - adaptive rendering based on device */}
       {/* Core flame - deep red/orange */}
@@ -230,15 +236,62 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
 
       {/* Outer flame - yellow tips (skip on mobile for performance) */}
       {!isMobile && (
-        <Fire
-          texture="/images/fire.png"
-          position={[0, -1, -12]}
-          scale={15.4}
-          color="#ffaa00"
-          magnitude={0.05}
-          lacunarity={0.25}
-          gain={0.15}
-        />
+        <>
+          <Fire
+            texture="/images/fire.png"
+            position={[0, -1, -12]}
+            scale={15.4}
+            color="#ffaa00"
+            magnitude={0.05}
+            lacunarity={0.25}
+            gain={0.15}
+          />
+
+          {/* Additional flame layers for desktop - more depth and realism */}
+          {/* Hot inner core - white/blue tint */}
+          <Fire
+            texture="/images/fire.png"
+            position={[0, -1.2, -12]}
+            scale={12.5}
+            color="#ffddaa"
+            magnitude={0.09}
+            lacunarity={0.35}
+            gain={0.18}
+          />
+
+          {/* Flickering mid-layer - orange-red */}
+          <Fire
+            texture="/images/fire.png"
+            position={[0, -0.8, -12]}
+            scale={14.2}
+            color="#ff5500"
+            magnitude={0.07}
+            lacunarity={0.28}
+            gain={0.16}
+          />
+
+          {/* Outer glow - pale yellow */}
+          <Fire
+            texture="/images/fire.png"
+            position={[0, -1, -12]}
+            scale={16.0}
+            color="#ffcc44"
+            magnitude={0.04}
+            lacunarity={0.22}
+            gain={0.14}
+          />
+
+          {/* Dancing tips - bright yellow-white */}
+          <Fire
+            texture="/images/fire.png"
+            position={[0, -0.5, -12]}
+            scale={13.8}
+            color="#ffffaa"
+            magnitude={0.06}
+            lacunarity={0.32}
+            gain={0.17}
+          />
+        </>
       )}
 
       {/* Smoke effect - single optimized instance */}
@@ -327,41 +380,41 @@ function SmokeParticles({ isActive, isMobile }: { isActive?: boolean; isMobile?:
     }[] = []
 
     const geometry = new PlaneGeometry(1.5, 1.5)
-    const particleCount = isMobile ? 10 : 30 // Further reduced on mobile
+    const particleCount = isMobile ? 10 : 80 // More particles for realistic fire on desktop
 
     for (let i = 0; i < particleCount; i++) {
       const material = new MeshBasicMaterial({
         map: smokeTexture,
         transparent: true,
-        opacity: 0.35, // Slightly reduced for better performance
+        opacity: isMobile ? 0.35 : 0.4, // Higher opacity on desktop for more visible smoke
         depthWrite: false,
         side: DoubleSide,
       })
 
       const mesh = new Mesh(geometry, material)
 
-      // Start position at fire top
+      // Start position at fire top with more variation
       const angle = Math.random() * Math.PI * 2
-      const radius = Math.random() * 1.0
+      const radius = Math.random() * 1.5 // Increased spread
       mesh.position.set(
         Math.cos(angle) * radius,
-        0.5 + Math.random() * 0.5,
+        0.5 + Math.random() * 1.0, // More vertical variation
         Math.sin(angle) * radius
       )
 
       // Random initial rotation
       mesh.rotation.z = Math.random() * Math.PI * 2
-      const initialSize = 0.15 + Math.random() * 0.75
+      const initialSize = isMobile ? (0.15 + Math.random() * 0.75) : (0.2 + Math.random() * 1.2) // Larger particles on desktop
       mesh.scale.set(initialSize, initialSize, 1)
 
       particles.push({
         mesh,
         velocity: new Vector3(
-          (Math.random() - 0.5) * 0.3,
-          0.3 + Math.random() * 0.1,
-          (Math.random() - 0.5) * 0.3
+          (Math.random() - 0.5) * 0.5, // More horizontal movement
+          0.25 + Math.random() * 0.15, // Slightly varied upward velocity
+          (Math.random() - 0.5) * 0.5
         ),
-        rotationSpeed: (Math.random() - 0.5) * 0.3,
+        rotationSpeed: (Math.random() - 0.5) * 0.4, // More rotation variation
       })
     }
 
@@ -399,18 +452,20 @@ function SmokeParticles({ isActive, isMobile }: { isActive?: boolean; isMobile?:
       // Reset particle when too high or faded
       if (particle.mesh.position.y > 10 || opacity <= 0) {
         const angle = Math.random() * Math.PI * 2
-        const radius = Math.random() * 1.0
+        const radius = Math.random() * 1.5
         particle.mesh.position.set(
           Math.cos(angle) * radius,
-          0.5 + Math.random() * 0.5,
+          0.5 + Math.random() * 1.0,
           Math.sin(angle) * radius
         )
         particle.velocity.set(
-          (Math.random() - 0.5) * 0.3,
-          0.3 + Math.random() * 0.1,
-          (Math.random() - 0.5) * 0.3
+          (Math.random() - 0.5) * 0.5,
+          0.25 + Math.random() * 0.15,
+          (Math.random() - 0.5) * 0.5
         )
         particle.mesh.rotation.z = Math.random() * Math.PI * 2
+        const newSize = 0.2 + Math.random() * 1.2
+        particle.mesh.scale.set(newSize, newSize, 1)
         ;(particle.mesh.material as MeshBasicMaterial).opacity = 0.4
       }
 
