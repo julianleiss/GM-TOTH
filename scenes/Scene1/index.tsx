@@ -37,7 +37,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       spawnTime: 0,
     },
   ])
-  const [lastThrowTime, setLastThrowTime] = useState(0)
+  const lastThrowTimeRef = useRef(0)
 
   // Track mouse position (normalized device coordinates)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
@@ -119,7 +119,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       } else {
         // Check if enough time has passed since last throw (1.5 second delay)
         const currentTime = state.clock.elapsedTime
-        const canSpawn = (currentTime - lastThrowTime) >= 1.5
+        const canSpawn = lastThrowTimeRef.current === 0 || (currentTime - lastThrowTimeRef.current) >= 1.5
 
         // If no inactive discs at all and enough time has passed, create one with spawn animation
         if (canSpawn) {
@@ -192,7 +192,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
     )
 
     // Update last throw time to trigger 1.5 second delay before next spawn
-    setLastThrowTime(currentTimeRef.current)
+    lastThrowTimeRef.current = currentTimeRef.current
   }
 
   return (
