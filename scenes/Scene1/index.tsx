@@ -185,22 +185,22 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -8]}
-        scale={14.0}
+        scale={20.0}
         color="#ff3300"
-        magnitude={0.3}
-        lacunarity={0.5}
-        gain={0.2}
+        magnitude={0.15}
+        lacunarity={0.3}
+        gain={0.15}
       />
 
       {/* Mid flame - bright orange */}
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -8]}
-        scale={14.8}
+        scale={21.0}
         color="#ff6600"
-        magnitude={0.25}
-        lacunarity={0.5}
-        gain={0.22}
+        magnitude={0.12}
+        lacunarity={0.3}
+        gain={0.15}
       />
 
       {/* Outer flame - yellow tips (skip on mobile for performance) */}
@@ -208,11 +208,11 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         <Fire
           texture="/images/fire.png"
           position={[0, -1, -8]}
-          scale={15.4}
+          scale={22.0}
           color="#ffaa00"
-          magnitude={0.2}
-          lacunarity={0.45}
-          gain={0.25}
+          magnitude={0.1}
+          lacunarity={0.25}
+          gain={0.15}
         />
       )}
 
@@ -296,7 +296,7 @@ function SmokeParticles({ isActive, isMobile }: { isActive?: boolean; isMobile?:
       rotationSpeed: number
     }[] = []
 
-    const geometry = new PlaneGeometry(10, 10)
+    const geometry = new PlaneGeometry(5, 5)
     const particleCount = isMobile ? 10 : 15 // Further reduced on mobile
 
     for (let i = 0; i < particleCount; i++) {
@@ -321,7 +321,7 @@ function SmokeParticles({ isActive, isMobile }: { isActive?: boolean; isMobile?:
 
       // Random initial rotation
       mesh.rotation.z = Math.random() * Math.PI * 2
-      const initialSize = 0.5 + Math.random() * 3.5
+      const initialSize = 0.3 + Math.random() * 1.5
       mesh.scale.set(initialSize, initialSize, 1)
 
       particles.push({
@@ -452,7 +452,7 @@ function Disc({
       }}
     >
       {/* Plane shape to display the logo image - larger size for better visibility */}
-      <planeGeometry args={[4.5, 4.5]} />
+      <planeGeometry args={[9, 9]} />
       <meshBasicMaterial
         map={logoTexture}
         transparent
@@ -476,7 +476,7 @@ export const frisbeeDiscThrowScene: Scene = {
   config: {
     camera: {
       position: [0, 2, 8],
-      fov: 75,
+      fov: 90,
     },
     lighting: 'studio',
     performance: {
