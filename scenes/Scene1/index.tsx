@@ -3,7 +3,7 @@
 import { useRef, useState, useMemo, useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Mesh, Vector3, AdditiveBlending, Points, BufferAttribute, CanvasTexture, PlaneGeometry, MeshBasicMaterial, DoubleSide } from 'three'
-import { OrbitControls, useTexture } from '@react-three/drei'
+import { useTexture } from '@react-three/drei'
 import { Scene, SceneProps } from '@/lib/types'
 import { Fire } from '@wolffo/three-fire/react'
 
@@ -158,18 +158,25 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
     )
   }
 
+  // Handle scene click - throw the first available disc
+  const handleSceneClick = () => {
+    const inactiveDiscIndex = discs.findIndex(disc => !disc.active)
+    if (inactiveDiscIndex !== -1) {
+      handleDiscClick(inactiveDiscIndex)
+    }
+  }
+
   return (
     <>
-      {/* Camera controls */}
-      <OrbitControls
-        enableZoom={true}
-        enablePan={false}
-        enableRotate={true}
-        maxDistance={20}
-        minDistance={3}
-        maxPolarAngle={Math.PI / 1.5}
-        minPolarAngle={Math.PI / 6}
-      />
+      {/* Invisible click plane covering the entire viewport */}
+      <mesh
+        position={[0, 0, 0]}
+        onClick={handleSceneClick}
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        <planeGeometry args={[100, 100]} />
+        <meshBasicMaterial transparent opacity={0} />
+      </mesh>
 
       {/* Black ground plane */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -3, 0]} receiveShadow>
@@ -235,7 +242,6 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           position={disc.position}
           rotation={disc.rotation}
           opacity={disc.opacity}
-          onClick={() => handleDiscClick(index)}
           isThrown={disc.active}
           camera={camera}
         />
@@ -396,14 +402,12 @@ function Disc({
   position,
   rotation,
   opacity,
-  onClick,
   isThrown,
   camera,
 }: {
   position: Vector3
   rotation: Vector3
   opacity: number
-  onClick: () => void
   isThrown: boolean
   camera: any
 }) {
@@ -428,16 +432,9 @@ function Disc({
     <mesh
       ref={meshRef}
       position={[position.x, position.y, position.z]}
-      onClick={(e) => {
-        e.stopPropagation()
-        onClick()
-      }}
-      onPointerDown={(e) => {
-        e.stopPropagation()
-      }}
     >
-      {/* Plane shape to display the logo image */}
-      <planeGeometry args={[2, 2]} />
+      {/* Plane shape to display the logo image - 3x bigger */}
+      <planeGeometry args={[6, 6]} />
       <meshBasicMaterial
         map={logoTexture}
         transparent
