@@ -216,17 +216,17 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <directionalLight position={[5, 8, 5]} intensity={0.1} />
 
       {/* Fire glow lights - optimized for mobile */}
-      <pointLight position={[0, 0, -18]} intensity={6} color="#ff4400" distance={20} decay={2} />
-      <pointLight position={[0, 2, -18]} intensity={4} color="#ff8800" distance={18} decay={2} />
+      <pointLight position={[0, 0, -12]} intensity={6} color="#ff4400" distance={20} decay={2} />
+      <pointLight position={[0, 2, -12]} intensity={4} color="#ff8800" distance={18} decay={2} />
 
       {/* Fire in the distance - adaptive rendering based on device */}
       {/* Core flame - deep red/orange */}
       <Fire
         texture="/images/fire.png"
-        position={[0, -1, -18]}
-        scale={20.0}
+        position={[0, -1, -12]}
+        scale={25.0}
         color="#ff3300"
-        magnitude={0.15}
+        magnitude={0.08}
         lacunarity={0.3}
         gain={0.15}
       />
@@ -234,10 +234,10 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       {/* Mid flame - bright orange */}
       <Fire
         texture="/images/fire.png"
-        position={[0, -1, -18]}
-        scale={21.0}
+        position={[0, -1, -12]}
+        scale={26.0}
         color="#ff6600"
-        magnitude={0.12}
+        magnitude={0.06}
         lacunarity={0.3}
         gain={0.15}
       />
@@ -246,10 +246,10 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       {!isMobile && (
         <Fire
           texture="/images/fire.png"
-          position={[0, -1, -18]}
-          scale={22.0}
+          position={[0, -1, -12]}
+          scale={27.0}
           color="#ffaa00"
-          magnitude={0.1}
+          magnitude={0.05}
           lacunarity={0.25}
           gain={0.15}
         />
@@ -509,11 +509,16 @@ function Disc({
       const targetX = position.x + mousePos.x * followAmount
       const targetY = position.y + mousePos.y * followAmount
 
+      // Clamp position to prevent logo from clipping at screen edges
+      // Logo is 12 units wide, so limit to ±4 units (with some margin)
+      const clampedX = Math.max(-4, Math.min(4, targetX))
+      const clampedY = Math.max(-3, Math.min(3, targetY))
+
       // Apply spawn animation: bounce from below
       const bounceOffset = timeSinceSpawn < SPAWN_DURATION ? (1 - bounce(spawnProgress)) * -3 : 0
 
-      meshRef.current.position.x = targetX
-      meshRef.current.position.y = targetY + bounceOffset
+      meshRef.current.position.x = clampedX
+      meshRef.current.position.y = clampedY + bounceOffset
       meshRef.current.position.z = 1 // Keep logo slightly forward to prevent clipping
 
       // Scale animation: start small, grow to normal size
