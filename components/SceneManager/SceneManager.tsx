@@ -133,11 +133,12 @@ export default function SceneManager({
             shadows={config.performance?.shadows}
             dpr={pixelRatio}
             gl={{
+              alpha: true,
               antialias: config.performance?.antialias ?? true,
               powerPreference: viewport.isMobile ? 'low-power' : 'high-performance',
             }}
             className="w-full h-full"
-            style={{ touchAction: 'none' }}
+            style={{ touchAction: 'none', background: 'transparent' }}
           >
             <SceneComponent
               isActive={true}

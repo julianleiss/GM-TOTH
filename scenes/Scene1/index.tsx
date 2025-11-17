@@ -197,16 +197,6 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
 
   return (
     <>
-      {/* Black ground plane */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -3, 0]} receiveShadow>
-        <planeGeometry args={[100, 100]} />
-        <meshStandardMaterial
-          color="#000000"
-          roughness={0.9}
-          metalness={0.1}
-        />
-      </mesh>
-
       {/* Lighting */}
       <ambientLight intensity={0.05} />
       <directionalLight position={[5, 8, 5]} intensity={0.1} />
