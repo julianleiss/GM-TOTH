@@ -135,7 +135,7 @@ export default function SceneManager({
             gl={{
               antialias: config.performance?.antialias ?? true,
               powerPreference: viewport.isMobile ? 'low-power' : 'high-performance',
-              alpha: true,
+              alpha: true, // Enable transparency to show background GIF
             }}
             className="w-full h-full"
             style={{ touchAction: 'none', background: 'transparent' }}

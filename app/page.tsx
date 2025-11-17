@@ -25,10 +25,7 @@ export default function Home() {
   }
 
   return (
-    <main className="w-screen h-screen bg-black overflow-hidden relative">
-      {/* Navigation */}
-      <Navigation />
-
+    <main className="w-screen h-screen overflow-hidden relative">
       {/* Background GIFs - Full Viewport */}
       <div className="fixed inset-0 w-full h-full z-0">
         {/* Desktop & Tablet Background */}
@@ -37,11 +34,11 @@ export default function Home() {
           alt="Background"
           className="hidden md:block w-full h-full object-cover"
         />
-        {/* Mobile Background */}
+        {/* Mobile Background - object-contain to show full GIF */}
         <img
           src="/images/BG-MOBILE-001.gif"
           alt="Background"
-          className="block md:hidden w-full h-full object-cover"
+          className="block md:hidden w-full h-full object-contain"
         />
       </div>
 

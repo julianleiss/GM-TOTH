@@ -445,7 +445,14 @@ function Disc({
   isMobile: boolean
 }) {
   const meshRef = useRef<Mesh>(null)
-  const [clickFeedback, setClickFeedback] = useState(0) // For mobile click animation
+  const [isHovered, setIsHovered] = useState(false)
+  const [isTouching, setIsTouching] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Detect mobile on mount
+  useEffect(() => {
+    setIsMobile(isMobileDevice())
+  }, [])
 
   // Load the GM logo texture
   const logoTexture = useTexture('/images/GM_LOGO.png')
@@ -506,10 +513,13 @@ function Disc({
 
       // Scale animation: start small, grow to device-specific size
       const scaleProgress = Math.min(spawnProgress * 1.5, 1)
-      // Responsive scaling: desktop -20% (0.8x), mobile -50% (0.5x)
-      const deviceScaleFactor = isMobile ? 0.5 : 0.8
-      const scale = (0.3 + scaleProgress * 0.7) * deviceScaleFactor
-      meshRef.current.scale.set(scale, scale, 1)
+      const baseScale = 0.3 + scaleProgress * 0.7
+
+      // Add interactive scale feedback: slightly larger when touching/hovering
+      const interactiveScale = isTouching ? 1.08 : isHovered ? 1.04 : 1.0
+      const finalScale = baseScale * interactiveScale
+
+      meshRef.current.scale.set(finalScale, finalScale, 1)
 
       // Make disc face camera when not thrown
       meshRef.current.lookAt(camera.position)
@@ -561,7 +571,8 @@ function Disc({
         }}
       >
         {/* Plane shape to display the logo image - larger size for better visibility */}
-        <planeGeometry args={[12, 12]} />
+        {/* Mobile: 6x6 (half size), Desktop: 12x12 */}
+        <planeGeometry args={isMobile ? [6, 6] : [12, 12]} />
         <meshBasicMaterial
           map={logoTexture}
           transparent
