@@ -147,7 +147,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
   const currentTimeRef = useRef(0)
 
   // Handle disc click/tap
-  const handleDiscClick = (discIndex: number) => {
+  const handleDiscClick = (discIndex: number, event?: any) => {
     const disc = discs[discIndex]
     if (disc.active) return // Already thrown
 
@@ -251,21 +251,10 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
 
       {/* Mouse tracking group */}
       <group onPointerMove={handleMouseMove}>
-        {/* Invisible plane to capture mouse events and clicks */}
+        {/* Invisible plane to capture mouse events (movement only, not clicks) */}
         <mesh
           position={[0, 0, 0]}
           visible={false}
-          onClick={(e) => {
-            e.stopPropagation()
-            // Find first inactive disc and throw it
-            const inactiveDiscIndex = discs.findIndex(d => !d.active)
-            if (inactiveDiscIndex !== -1) {
-              handleDiscClick(inactiveDiscIndex)
-            }
-          }}
-          onPointerDown={(e) => {
-            e.stopPropagation()
-          }}
         >
           <planeGeometry args={[100, 100]} />
           <meshBasicMaterial transparent opacity={0} />
@@ -458,6 +447,8 @@ function Disc({
   spawnTime: number
 }) {
   const meshRef = useRef<Mesh>(null)
+  const [isHovered, setIsHovered] = useState(false)
+  const [isTouching, setIsTouching] = useState(false)
 
   // Load the GM logo texture
   const logoTexture = useTexture('/images/GM_LOGO.png')
@@ -550,10 +541,35 @@ function Disc({
         frustumCulled={false}
         onClick={(e) => {
           e.stopPropagation()
-          onClick()
+          if (!isThrown) {
+            onClick()
+          }
         }}
         onPointerDown={(e) => {
           e.stopPropagation()
+          if (!isThrown) {
+            setIsTouching(true)
+            // Trigger click immediately on pointer down for better mobile responsiveness
+            onClick()
+          }
+        }}
+        onPointerUp={(e) => {
+          e.stopPropagation()
+          setIsTouching(false)
+        }}
+        onPointerEnter={(e) => {
+          if (!isThrown) {
+            setIsHovered(true)
+            // Change cursor to pointer on hover (desktop)
+            if (e.pointerType === 'mouse') {
+              document.body.style.cursor = 'pointer'
+            }
+          }
+        }}
+        onPointerLeave={(e) => {
+          setIsHovered(false)
+          setIsTouching(false)
+          document.body.style.cursor = 'default'
         }}
       >
         {/* Plane shape to display the logo image - larger size for better visibility */}
@@ -564,6 +580,8 @@ function Disc({
           opacity={opacity}
           side={DoubleSide}
           toneMapped={false}
+          emissive={isTouching || isHovered ? '#ffffff' : '#000000'}
+          emissiveIntensity={isTouching ? 0.3 : isHovered ? 0.15 : 0}
         />
       </mesh>
     </>
