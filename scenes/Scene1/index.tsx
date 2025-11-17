@@ -207,8 +207,8 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <directionalLight position={[5, 8, 5]} intensity={0.1} />
 
       {/* Fire glow lights - optimized for mobile */}
-      <pointLight position={[0, 0, -12]} intensity={6} color="#ff4400" distance={20} decay={2} />
-      <pointLight position={[0, 2, -12]} intensity={4} color="#ff8800" distance={18} decay={2} />
+      <pointLight position={[0, 0, -12]} intensity={7} color="#ff4400" distance={50} decay={2} />
+      <pointLight position={[0, 2, -12]} intensity={3} color="#ff8800" distance={30} decay={2} />
 
       {/* Fire in the distance - adaptive rendering based on device */}
       {/* Core flame - deep red/orange */}
@@ -341,8 +341,8 @@ function SmokeParticles({ isActive, isMobile }: { isActive?: boolean; isMobile?:
       rotationSpeed: number
     }[] = []
 
-    const geometry = new PlaneGeometry(2.5, 2.5)
-    const particleCount = isMobile ? 10 : 15 // Further reduced on mobile
+    const geometry = new PlaneGeometry(1.5, 1.5)
+    const particleCount = isMobile ? 10 : 30 // Further reduced on mobile
 
     for (let i = 0; i < particleCount; i++) {
       const material = new MeshBasicMaterial({
@@ -373,7 +373,7 @@ function SmokeParticles({ isActive, isMobile }: { isActive?: boolean; isMobile?:
         mesh,
         velocity: new Vector3(
           (Math.random() - 0.5) * 0.3,
-          0.4 + Math.random() * 0.4,
+          0.3 + Math.random() * 0.1,
           (Math.random() - 0.5) * 0.3
         ),
         rotationSpeed: (Math.random() - 0.5) * 0.3,
@@ -422,7 +422,7 @@ function SmokeParticles({ isActive, isMobile }: { isActive?: boolean; isMobile?:
         )
         particle.velocity.set(
           (Math.random() - 0.5) * 0.3,
-          0.4 + Math.random() * 0.4,
+          0.3 + Math.random() * 0.1,
           (Math.random() - 0.5) * 0.3
         )
         particle.mesh.rotation.z = Math.random() * Math.PI * 2
