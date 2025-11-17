@@ -220,7 +220,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -12]}
-        scale={25.0}
+        scale={14.0}
         color="#ff3300"
         magnitude={0.08}
         lacunarity={0.3}
@@ -231,7 +231,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -12]}
-        scale={26.0}
+        scale={14.8}
         color="#ff6600"
         magnitude={0.06}
         lacunarity={0.3}
@@ -243,7 +243,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         <Fire
           texture="/images/fire.png"
           position={[0, -1, -12]}
-          scale={27.0}
+          scale={15.4}
           color="#ffaa00"
           magnitude={0.05}
           lacunarity={0.25}
@@ -587,7 +587,7 @@ export const frisbeeDiscThrowScene: Scene = {
   config: {
     camera: {
       position: [0, 2, 8],
-      fov: 90,
+      fov: 75,
       near: 0.001, // Extremely small near plane to prevent clipping
       far: 1000,
     },
