@@ -24,9 +24,9 @@ export default function Home() {
   }
 
   return (
-    <main className="w-screen h-screen bg-black overflow-hidden relative">
+    <main className="w-screen h-screen overflow-hidden relative">
       {/* Background GIFs - Full Viewport */}
-      <div className="fixed inset-0 w-full h-full z-0 bg-black">
+      <div className="fixed inset-0 w-full h-full z-0">
         {/* Desktop & Tablet Background */}
         <img
           src="/images/BG-DESK-001.gif"
