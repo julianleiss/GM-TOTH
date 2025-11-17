@@ -180,9 +180,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -8]}
-        scale={7.0}
+        scale={14.0}
         color="#cc1100"
-        magnitude={1.9}
+        magnitude={0.95}
         lacunarity={1.4}
         gain={0.5}
       />
@@ -191,9 +191,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -8]}
-        scale={7.0}
+        scale={14.0}
         color="#ff2200"
-        magnitude={1.8}
+        magnitude={0.9}
         lacunarity={1.3}
         gain={0.52}
       />
@@ -202,9 +202,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -8]}
-        scale={7.2}
+        scale={14.4}
         color="#ff4400"
-        magnitude={1.7}
+        magnitude={0.85}
         lacunarity={1.3}
         gain={0.54}
       />
@@ -213,9 +213,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -8]}
-        scale={7.4}
+        scale={14.8}
         color="#ff6600"
-        magnitude={1.6}
+        magnitude={0.8}
         lacunarity={1.2}
         gain={0.56}
       />
@@ -224,9 +224,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -8]}
-        scale={7.6}
+        scale={15.2}
         color="#ff8800"
-        magnitude={1.5}
+        magnitude={0.75}
         lacunarity={1.2}
         gain={0.58}
       />
@@ -235,9 +235,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -8]}
-        scale={7.8}
+        scale={15.6}
         color="#ffaa00"
-        magnitude={1.4}
+        magnitude={0.7}
         lacunarity={1.1}
         gain={0.6}
       />
@@ -246,9 +246,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -8]}
-        scale={8.0}
+        scale={16.0}
         color="#ffcc00"
-        magnitude={1.3}
+        magnitude={0.65}
         lacunarity={1.1}
         gain={0.62}
       />
