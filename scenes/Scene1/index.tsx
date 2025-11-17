@@ -2,7 +2,7 @@
 
 import { useRef, useState, useMemo } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { Mesh, Vector3, AdditiveBlending, Points, BufferAttribute } from 'three'
+import { Mesh, Vector3, AdditiveBlending, Points, BufferAttribute, CanvasTexture, PlaneGeometry, MeshBasicMaterial, DoubleSide } from 'three'
 import { OrbitControls } from '@react-three/drei'
 import { Scene, SceneProps } from '@/lib/types'
 
@@ -181,117 +181,103 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
   )
 }
 
-// Fire component - Realistic fire effect using particles
+// Generate procedural fire texture
+function generateFireTexture(): CanvasTexture {
+  const canvas = document.createElement('canvas')
+  canvas.width = 128
+  canvas.height = 128
+
+  const ctx = canvas.getContext('2d')!
+  const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64)
+
+  // Fire gradient: white core -> yellow -> orange -> red -> transparent
+  gradient.addColorStop(0, 'rgba(255, 255, 255, 1)')
+  gradient.addColorStop(0.2, 'rgba(255, 255, 100, 1)')
+  gradient.addColorStop(0.4, 'rgba(255, 160, 0, 1)')
+  gradient.addColorStop(0.6, 'rgba(255, 80, 0, 0.8)')
+  gradient.addColorStop(0.8, 'rgba(200, 40, 0, 0.4)')
+  gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
+
+  ctx.fillStyle = gradient
+  ctx.fillRect(0, 0, 128, 128)
+
+  const texture = new CanvasTexture(canvas)
+  return texture
+}
+
+// Fire component - Textured particle system
 function Fire({ isActive }: { isActive?: boolean }) {
   const particlesRef = useRef<Points>(null)
-  const particlesRef2 = useRef<Points>(null)
-  const particlesRef3 = useRef<Points>(null)
+  const fireTexture = useMemo(() => generateFireTexture(), [])
 
-  // Create particle systems with different characteristics
-  const { positions, velocities, lifetimes, sizes, colors } = useMemo(() => {
-    const particleCount = 1500
+  const { positions, velocities, lifetimes, sizes } = useMemo(() => {
+    const particleCount = 500
     const positions = new Float32Array(particleCount * 3)
     const velocities = new Float32Array(particleCount * 3)
     const lifetimes = new Float32Array(particleCount)
     const sizes = new Float32Array(particleCount)
-    const colors = new Float32Array(particleCount * 3)
 
     for (let i = 0; i < particleCount; i++) {
-      // Start particles at base of fire with some spread
       const angle = Math.random() * Math.PI * 2
-      const radius = Math.random() * 1.5
+      const radius = Math.random() * 1.2
 
       positions[i * 3] = Math.cos(angle) * radius
-      positions[i * 3 + 1] = Math.random() * -2 // Start below center
+      positions[i * 3 + 1] = Math.random() * -1.5
       positions[i * 3 + 2] = Math.sin(angle) * radius
 
-      // Upward velocity with some turbulence
-      velocities[i * 3] = (Math.random() - 0.5) * 1.5
-      velocities[i * 3 + 1] = Math.random() * 3 + 2 // Strong upward
-      velocities[i * 3 + 2] = (Math.random() - 0.5) * 1.5
+      velocities[i * 3] = (Math.random() - 0.5) * 1.0
+      velocities[i * 3 + 1] = Math.random() * 2 + 1.5
+      velocities[i * 3 + 2] = (Math.random() - 0.5) * 1.0
 
       lifetimes[i] = Math.random()
-      sizes[i] = Math.random() * 0.8 + 0.2
-
-      // Color variation - red to orange to yellow
-      const colorMix = Math.random()
-      if (colorMix < 0.3) {
-        // Deep red/orange
-        colors[i * 3] = 1.0
-        colors[i * 3 + 1] = 0.2 + Math.random() * 0.3
-        colors[i * 3 + 2] = 0.0
-      } else if (colorMix < 0.7) {
-        // Orange
-        colors[i * 3] = 1.0
-        colors[i * 3 + 1] = 0.4 + Math.random() * 0.4
-        colors[i * 3 + 2] = 0.0
-      } else {
-        // Yellow
-        colors[i * 3] = 1.0
-        colors[i * 3 + 1] = 0.8 + Math.random() * 0.2
-        colors[i * 3 + 2] = 0.1 + Math.random() * 0.2
-      }
+      sizes[i] = Math.random() * 1.5 + 0.5
     }
 
-    return { positions, velocities, lifetimes, sizes, colors }
+    return { positions, velocities, lifetimes, sizes }
   }, [])
 
-  // Animate particles
   useFrame((state, delta) => {
-    if (!isActive) return
+    if (!isActive || !particlesRef.current) return
 
-    const animateParticles = (particlesRef: React.RefObject<Points>, speedMult: number = 1) => {
-      if (!particlesRef.current) return
+    const positions = particlesRef.current.geometry.attributes.position.array as Float32Array
+    const particleCount = positions.length / 3
 
-      const positions = particlesRef.current.geometry.attributes.position.array as Float32Array
-      const particleCount = positions.length / 3
+    for (let i = 0; i < particleCount; i++) {
+      const i3 = i * 3
 
-      for (let i = 0; i < particleCount; i++) {
-        const i3 = i * 3
+      lifetimes[i] += delta * 0.4
 
-        // Update lifetime
-        lifetimes[i] += delta * 0.3 * speedMult
+      if (lifetimes[i] > 1.0) {
+        lifetimes[i] = 0
+        const angle = Math.random() * Math.PI * 2
+        const radius = Math.random() * 1.2
 
-        if (lifetimes[i] > 1.0) {
-          // Reset particle
-          lifetimes[i] = 0
-          const angle = Math.random() * Math.PI * 2
-          const radius = Math.random() * 1.5
+        positions[i3] = Math.cos(angle) * radius
+        positions[i3 + 1] = -1.5
+        positions[i3 + 2] = Math.sin(angle) * radius
 
-          positions[i3] = Math.cos(angle) * radius
-          positions[i3 + 1] = -2
-          positions[i3 + 2] = Math.sin(angle) * radius
+        velocities[i3] = (Math.random() - 0.5) * 1.0
+        velocities[i3 + 1] = Math.random() * 2 + 1.5
+        velocities[i3 + 2] = (Math.random() - 0.5) * 1.0
+      } else {
+        positions[i3] += velocities[i3] * delta
+        positions[i3 + 1] += velocities[i3 + 1] * delta
+        positions[i3 + 2] += velocities[i3 + 2] * delta
 
-          velocities[i3] = (Math.random() - 0.5) * 1.5
-          velocities[i3 + 1] = Math.random() * 3 + 2
-          velocities[i3 + 2] = (Math.random() - 0.5) * 1.5
-        } else {
-          // Update position based on velocity
-          positions[i3] += velocities[i3] * delta * speedMult
-          positions[i3 + 1] += velocities[i3 + 1] * delta * speedMult
-          positions[i3 + 2] += velocities[i3 + 2] * delta * speedMult
+        // Turbulence
+        positions[i3] += Math.sin(state.clock.elapsedTime * 2 + i * 0.1) * delta * 0.4
+        positions[i3 + 2] += Math.cos(state.clock.elapsedTime * 2 + i * 0.1) * delta * 0.4
 
-          // Add turbulence
-          positions[i3] += Math.sin(state.clock.elapsedTime * 2 + i) * delta * 0.5
-          positions[i3 + 2] += Math.cos(state.clock.elapsedTime * 2 + i) * delta * 0.5
-
-          // Velocity decay and curl
-          velocities[i3] *= 0.99
-          velocities[i3 + 2] *= 0.99
-        }
+        velocities[i3] *= 0.98
+        velocities[i3 + 2] *= 0.98
       }
-
-      particlesRef.current.geometry.attributes.position.needsUpdate = true
     }
 
-    animateParticles(particlesRef, 1.0)
-    animateParticles(particlesRef2, 0.8)
-    animateParticles(particlesRef3, 1.2)
+    particlesRef.current.geometry.attributes.position.needsUpdate = true
   })
 
   return (
     <group position={[0, 0, -2]}>
-      {/* Main fire particles - Orange/Red */}
       <points ref={particlesRef}>
         <bufferGeometry>
           <bufferAttribute
@@ -301,66 +287,24 @@ function Fire({ isActive }: { isActive?: boolean }) {
             itemSize={3}
           />
           <bufferAttribute
-            attach="attributes-color"
-            count={colors.length / 3}
-            array={colors}
-            itemSize={3}
+            attach="attributes-size"
+            count={sizes.length}
+            array={sizes}
+            itemSize={1}
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.4}
-          vertexColors
+          size={1.5}
+          map={fireTexture}
           transparent
-          opacity={0.8}
+          opacity={0.9}
           blending={AdditiveBlending}
           depthWrite={false}
           sizeAttenuation={true}
         />
       </points>
 
-      {/* Secondary layer - brighter core */}
-      <points ref={particlesRef2}>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            count={positions.length / 3}
-            array={positions}
-            itemSize={3}
-          />
-        </bufferGeometry>
-        <pointsMaterial
-          size={0.3}
-          color="#ffaa00"
-          transparent
-          opacity={0.6}
-          blending={AdditiveBlending}
-          depthWrite={false}
-          sizeAttenuation={true}
-        />
-      </points>
-
-      {/* Third layer - yellow highlights */}
-      <points ref={particlesRef3}>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            count={positions.length / 3}
-            array={positions}
-            itemSize={3}
-          />
-        </bufferGeometry>
-        <pointsMaterial
-          size={0.2}
-          color="#ffff66"
-          transparent
-          opacity={0.4}
-          blending={AdditiveBlending}
-          depthWrite={false}
-          sizeAttenuation={true}
-        />
-      </points>
-
-      {/* Point lights for fire glow */}
+      {/* Fire glow lights */}
       <pointLight position={[0, 0, 0]} intensity={3} color="#ff4400" distance={10} />
       <pointLight position={[0, 1, 0]} intensity={2} color="#ff8800" distance={8} />
       <pointLight position={[0, -1, 0]} intensity={1.5} color="#ff2200" distance={6} />
@@ -368,105 +312,149 @@ function Fire({ isActive }: { isActive?: boolean }) {
   )
 }
 
-// Smoke Particles Component - Point-based particles like fire
-function SmokeParticles({ isActive }: { isActive?: boolean }) {
-  const smokeRef = useRef<Points>(null)
+// Generate procedural smoke texture
+function generateSmokeTexture(): CanvasTexture {
+  const canvas = document.createElement('canvas')
+  canvas.width = 256
+  canvas.height = 256
 
-  // Create smoke particle system
-  const { positions, velocities, lifetimes } = useMemo(() => {
-    const particleCount = 800
-    const positions = new Float32Array(particleCount * 3)
-    const velocities = new Float32Array(particleCount * 3)
-    const lifetimes = new Float32Array(particleCount)
+  const ctx = canvas.getContext('2d')!
+  const centerX = canvas.width / 2
+  const centerY = canvas.height / 2
+
+  // Create radial gradient for smoke
+  const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, canvas.width / 2)
+  gradient.addColorStop(0, 'rgba(200, 200, 200, 0.5)')
+  gradient.addColorStop(0.2, 'rgba(150, 150, 150, 0.4)')
+  gradient.addColorStop(0.4, 'rgba(100, 100, 100, 0.2)')
+  gradient.addColorStop(0.7, 'rgba(50, 50, 50, 0.1)')
+  gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
+
+  ctx.fillStyle = gradient
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  // Add noise for texture
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+  const data = imageData.data
+
+  for (let i = 0; i < data.length; i += 4) {
+    const noise = Math.random() * 40 - 20
+    data[i] = Math.max(0, Math.min(255, data[i] + noise))
+    data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise))
+    data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise))
+  }
+
+  ctx.putImageData(imageData, 0, 0)
+
+  const texture = new CanvasTexture(canvas)
+  return texture
+}
+
+// Smoke Particles Component - Mesh-based with rotation (like sbrl example)
+function SmokeParticles({ isActive }: { isActive?: boolean }) {
+  const groupRef = useRef<any>(null)
+  const smokeTexture = useMemo(() => generateSmokeTexture(), [])
+
+  // Create smoke mesh particles
+  const smokeParticles = useMemo(() => {
+    const particles: {
+      mesh: Mesh
+      velocity: Vector3
+      rotationSpeed: number
+    }[] = []
+
+    const geometry = new PlaneGeometry(10, 10)
+    const particleCount = 30
 
     for (let i = 0; i < particleCount; i++) {
-      // Start particles at fire top with some spread
+      const material = new MeshBasicMaterial({
+        map: smokeTexture,
+        transparent: true,
+        opacity: 0.4,
+        depthWrite: false,
+        side: DoubleSide,
+      })
+
+      const mesh = new Mesh(geometry, material)
+
+      // Start position at fire top
       const angle = Math.random() * Math.PI * 2
       const radius = Math.random() * 1.0
+      mesh.position.set(
+        Math.cos(angle) * radius,
+        0.5 + Math.random() * 0.5,
+        Math.sin(angle) * radius
+      )
 
-      positions[i * 3] = Math.cos(angle) * radius
-      positions[i * 3 + 1] = Math.random() * 0.5 // Start at fire top
-      positions[i * 3 + 2] = Math.sin(angle) * radius
+      // Random initial rotation
+      mesh.rotation.z = Math.random() * Math.PI * 2
 
-      // Slow upward velocity with drift
-      velocities[i * 3] = (Math.random() - 0.5) * 0.5
-      velocities[i * 3 + 1] = Math.random() * 0.5 + 0.5 // Slow upward
-      velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.5
-
-      lifetimes[i] = Math.random()
+      particles.push({
+        mesh,
+        velocity: new Vector3(
+          (Math.random() - 0.5) * 0.3,
+          0.4 + Math.random() * 0.4,
+          (Math.random() - 0.5) * 0.3
+        ),
+        rotationSpeed: (Math.random() - 0.5) * 0.3,
+      })
     }
 
-    return { positions, velocities, lifetimes }
-  }, [])
+    return particles
+  }, [smokeTexture])
 
-  // Animate smoke particles
+  // Add meshes to group
+  useMemo(() => {
+    if (groupRef.current) {
+      smokeParticles.forEach(p => groupRef.current.add(p.mesh))
+    }
+  }, [smokeParticles])
+
+  // Animate smoke - evolveSmoke pattern
   useFrame((state, delta) => {
-    if (!isActive || !smokeRef.current) return
+    if (!isActive) return
 
-    const positions = smokeRef.current.geometry.attributes.position.array as Float32Array
-    const particleCount = positions.length / 3
+    smokeParticles.forEach((particle) => {
+      // Update position
+      particle.mesh.position.x += particle.velocity.x * delta
+      particle.mesh.position.y += particle.velocity.y * delta
+      particle.mesh.position.z += particle.velocity.z * delta
 
-    for (let i = 0; i < particleCount; i++) {
-      const i3 = i * 3
+      // Rotate smoke (key feature from sbrl example)
+      particle.mesh.rotation.z += delta * particle.rotationSpeed
 
-      // Update lifetime
-      lifetimes[i] += delta * 0.2
+      // Add turbulence
+      particle.mesh.position.x += Math.sin(state.clock.elapsedTime * 0.3 + particle.mesh.position.y) * delta * 0.2
+      particle.mesh.position.z += Math.cos(state.clock.elapsedTime * 0.3 + particle.mesh.position.y) * delta * 0.2
 
-      if (lifetimes[i] > 1.0) {
-        // Reset particle
-        lifetimes[i] = 0
+      // Fade out as it rises
+      const opacity = Math.max(0, 0.4 - (particle.mesh.position.y / 15) * 0.4)
+      ;(particle.mesh.material as MeshBasicMaterial).opacity = opacity
+
+      // Reset particle when too high or faded
+      if (particle.mesh.position.y > 10 || opacity <= 0) {
         const angle = Math.random() * Math.PI * 2
         const radius = Math.random() * 1.0
-
-        positions[i3] = Math.cos(angle) * radius
-        positions[i3 + 1] = 0.5
-        positions[i3 + 2] = Math.sin(angle) * radius
-
-        velocities[i3] = (Math.random() - 0.5) * 0.5
-        velocities[i3 + 1] = Math.random() * 0.5 + 0.5
-        velocities[i3 + 2] = (Math.random() - 0.5) * 0.5
-      } else {
-        // Update position based on velocity
-        positions[i3] += velocities[i3] * delta
-        positions[i3 + 1] += velocities[i3 + 1] * delta
-        positions[i3 + 2] += velocities[i3 + 2] * delta
-
-        // Add turbulence
-        positions[i3] += Math.sin(state.clock.elapsedTime * 0.5 + i) * delta * 0.3
-        positions[i3 + 2] += Math.cos(state.clock.elapsedTime * 0.5 + i) * delta * 0.3
-
-        // Velocity decay
-        velocities[i3] *= 0.99
-        velocities[i3 + 2] *= 0.99
+        particle.mesh.position.set(
+          Math.cos(angle) * radius,
+          0.5 + Math.random() * 0.5,
+          Math.sin(angle) * radius
+        )
+        particle.velocity.set(
+          (Math.random() - 0.5) * 0.3,
+          0.4 + Math.random() * 0.4,
+          (Math.random() - 0.5) * 0.3
+        )
+        particle.mesh.rotation.z = Math.random() * Math.PI * 2
+        ;(particle.mesh.material as MeshBasicMaterial).opacity = 0.4
       }
-    }
 
-    smokeRef.current.geometry.attributes.position.needsUpdate = true
+      // Slow down
+      particle.velocity.multiplyScalar(0.99)
+    })
   })
 
-  return (
-    <group position={[0, 0, -2]}>
-      <points ref={smokeRef}>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            count={positions.length / 3}
-            array={positions}
-            itemSize={3}
-          />
-        </bufferGeometry>
-        <pointsMaterial
-          size={2.0}
-          color="#666666"
-          transparent
-          opacity={0.15}
-          blending={AdditiveBlending}
-          depthWrite={false}
-          sizeAttenuation={true}
-        />
-      </points>
-    </group>
-  )
+  return <group ref={groupRef} position={[0, 0, -2]} />
 }
 
 // Disc component
