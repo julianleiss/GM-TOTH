@@ -152,7 +152,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
   const currentTimeRef = useRef(0)
 
   // Handle disc click/tap
-  const handleDiscClick = (discIndex: number) => {
+  const handleDiscClick = (discIndex: number, event?: any) => {
     const disc = discs[discIndex]
     if (disc.active) return // Already thrown
 
@@ -246,21 +246,10 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
 
       {/* Mouse tracking group */}
       <group onPointerMove={handleMouseMove}>
-        {/* Invisible plane to capture mouse events and clicks */}
+        {/* Invisible plane to capture mouse events (movement only, not clicks) */}
         <mesh
           position={[0, 0, 0]}
           visible={false}
-          onClick={(e) => {
-            e.stopPropagation()
-            // Find first inactive disc and throw it
-            const inactiveDiscIndex = discs.findIndex(d => !d.active)
-            if (inactiveDiscIndex !== -1) {
-              handleDiscClick(inactiveDiscIndex)
-            }
-          }}
-          onPointerDown={(e) => {
-            e.stopPropagation()
-          }}
         >
           <planeGeometry args={[100, 100]} />
           <meshBasicMaterial transparent opacity={0} />
@@ -456,6 +445,7 @@ function Disc({
   isMobile: boolean
 }) {
   const meshRef = useRef<Mesh>(null)
+  const [clickFeedback, setClickFeedback] = useState(0) // For mobile click animation
 
   // Load the GM logo texture
   const logoTexture = useTexture('/images/GM_LOGO.png')
@@ -466,7 +456,7 @@ function Disc({
   // Calculate spawn flash intensity
   const [flashIntensity, setFlashIntensity] = useState(0)
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     if (meshRef.current && !isThrown) {
       // Calculate spawn animation progress
       const currentTime = state.clock.elapsedTime
@@ -510,7 +500,11 @@ function Disc({
       meshRef.current.position.y = clampedY + bounceOffset
       meshRef.current.position.z = 1 // Keep logo slightly forward to prevent clipping
 
-      // Scale animation: start small, grow to normal size
+      // Determine final scale based on device
+      // Desktop: 30% smaller (0.7), Mobile: 50% smaller (0.5)
+      const finalScale = isMobile ? 0.5 : 0.7
+
+      // Scale animation: start small, grow to device-specific size
       const scaleProgress = Math.min(spawnProgress * 1.5, 1)
       // Responsive scaling: desktop -20% (0.8x), mobile -50% (0.5x)
       const deviceScaleFactor = isMobile ? 0.5 : 0.8
@@ -550,10 +544,20 @@ function Disc({
         frustumCulled={false}
         onClick={(e) => {
           e.stopPropagation()
-          onClick()
+          if (!isThrown) {
+            onClick()
+          }
         }}
         onPointerDown={(e) => {
           e.stopPropagation()
+          if (!isThrown) {
+            // Trigger click feedback on mobile
+            if (isMobile) {
+              setClickFeedback(1)
+            }
+            // Trigger click immediately on pointer down for better mobile responsiveness
+            onClick()
+          }
         }}
       >
         {/* Plane shape to display the logo image - larger size for better visibility */}
