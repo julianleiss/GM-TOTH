@@ -57,6 +57,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
   useFrame((state, delta) => {
     if (!isActive) return
 
+    // Update current time ref for spawning
+    currentTimeRef.current = state.clock.elapsedTime
+
     // Update discs physics
     setDiscs((prevDiscs) =>
       prevDiscs.map((disc) => {
@@ -110,18 +113,15 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       // Find the inactive disc at center (position near 0,0,0)
       const centerDisc = inactiveDiscs.find(d => d.position.length() < 0.5)
 
-      // Always keep active discs and the center disc
+      // Always keep active discs and the center disc if it exists
       if (centerDisc) {
         return [...activeDiscs, centerDisc]
-      } else if (inactiveDiscs.length > 0) {
-        // If no center disc, keep the first inactive one
-        return [...activeDiscs, inactiveDiscs[0]]
       } else {
-        // Check if enough time has passed since last throw (1.5 second delay)
+        // No center disc exists - need to create one
         const currentTime = state.clock.elapsedTime
         const canSpawn = lastThrowTimeRef.current === 0 || (currentTime - lastThrowTimeRef.current) >= 1.5
 
-        // If no inactive discs at all and enough time has passed, create one with spawn animation
+        // If enough time has passed, create a new disc at center with spawn animation
         if (canSpawn) {
           return [
             ...activeDiscs,
@@ -137,7 +137,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           ]
         }
 
-        // If not enough time has passed, just return active discs
+        // If not enough time has passed, return only active discs (discard any inactive discs not at center)
         return activeDiscs
       }
     })
@@ -145,11 +145,6 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
 
   // Store current time for spawning
   const currentTimeRef = useRef(0)
-
-  // Update current time in every frame
-  useFrame((state) => {
-    currentTimeRef.current = state.clock.elapsedTime
-  })
 
   // Handle disc click/tap
   const handleDiscClick = (discIndex: number) => {
@@ -220,7 +215,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -12]}
-        scale={25.0}
+        scale={14.0}
         color="#ff3300"
         magnitude={0.08}
         lacunarity={0.3}
@@ -231,7 +226,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -12]}
-        scale={26.0}
+        scale={14.8}
         color="#ff6600"
         magnitude={0.06}
         lacunarity={0.3}
@@ -243,7 +238,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         <Fire
           texture="/images/fire.png"
           position={[0, -1, -12]}
-          scale={27.0}
+          scale={15.4}
           color="#ffaa00"
           magnitude={0.05}
           lacunarity={0.25}
@@ -587,7 +582,7 @@ export const frisbeeDiscThrowScene: Scene = {
   config: {
     camera: {
       position: [0, 2, 8],
-      fov: 90,
+      fov: 75,
       near: 0.001, // Extremely small near plane to prevent clipping
       far: 1000,
     },
