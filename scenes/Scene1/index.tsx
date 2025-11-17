@@ -20,7 +20,12 @@ interface DiscState {
   rotationVelocity: Vector3
   opacity: number
   active: boolean
-  spawnTime: number // Time when disc was spawned
+  spawning: boolean
+  spawnTime: number
+  scale: number
+  hitFire: boolean
+  hitFireTime: number
+  spawnVelocity?: Vector3  // For realistic spawn physics
 }
 
 function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
@@ -35,6 +40,10 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       opacity: 1,
       active: false,
       spawnTime: 0,
+      scale: 1,
+      hitFire: false,
+      hitFireTime: 0,
+      spawnVelocity: new Vector3(0, 0, 0),
     },
   ])
 
@@ -59,6 +68,64 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
     // Update discs physics
     setDiscs((prevDiscs) =>
       prevDiscs.map((disc) => {
+        // Handle spawning animation with realistic bounce physics
+        if (disc.spawning) {
+          const spawnDuration = 1.2 // 1.2s spawn animation for realistic bouncing
+          const spawnProgress = (currentTime - disc.spawnTime) / spawnDuration
+
+          if (spawnProgress >= 1) {
+            // Spawn animation complete
+            return {
+              ...disc,
+              spawning: false,
+              scale: 1,
+              opacity: 1,
+              spawnVelocity: new Vector3(0, 0, 0),
+            }
+          }
+
+          // Initialize spawn velocity if not set
+          if (!disc.spawnVelocity) {
+            disc.spawnVelocity = new Vector3(0, 6, 0) // Initial upward velocity
+          }
+
+          // Realistic bounce physics
+          const gravity = 20 // Gravity acceleration
+          const groundY = 2 // Ground level for logo
+          const bounceDamping = 0.6 // Energy loss on bounce (60% energy retained)
+          const minBounceVelocity = 0.3 // Stop bouncing when velocity is too low
+
+          // Update velocity with gravity
+          let newSpawnVelocity = disc.spawnVelocity.clone()
+          newSpawnVelocity.y -= gravity * delta
+
+          // Update position
+          let newY = disc.position.y + newSpawnVelocity.y * delta
+
+          // Ground collision detection and bounce
+          if (newY <= groundY && newSpawnVelocity.y < 0) {
+            newY = groundY
+            newSpawnVelocity.y = -newSpawnVelocity.y * bounceDamping // Reverse and dampen
+
+            // Stop bouncing if velocity too low
+            if (Math.abs(newSpawnVelocity.y) < minBounceVelocity) {
+              newSpawnVelocity.y = 0
+              newY = groundY
+            }
+          }
+
+          // Scale animation - quick scale up
+          const scaleAnim = Math.min(1, spawnProgress * 3)
+
+          return {
+            ...disc,
+            position: new Vector3(0, newY, 0),
+            scale: scaleAnim,
+            opacity: scaleAnim,
+            spawnVelocity: newSpawnVelocity,
+          }
+        }
+
         if (!disc.active) return disc
 
         // Update position with velocity
@@ -71,9 +138,25 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           disc.rotationVelocity.clone().multiplyScalar(delta)
         )
 
-        // Apply gravity
+        // Apply gravity and air resistance for realistic physics
         const newVelocity = disc.velocity.clone()
-        newVelocity.y -= 3 * delta // gravity
+        newVelocity.y -= 9.8 * delta // More realistic gravity (9.8 m/s²)
+
+        // Air resistance (drag) - slows down the disc over time
+        const airResistance = 0.98 // Drag coefficient (2% velocity loss per frame)
+        newVelocity.multiplyScalar(Math.pow(airResistance, delta * 60)) // Frame-rate independent
+
+        // Check collision with fire (fire is at [0, -1, -8])
+        const fireCenter = new Vector3(0, 0, -8)
+        const distanceToFire = newPosition.distanceTo(fireCenter)
+        let hitFire = disc.hitFire
+        let hitFireTime = disc.hitFireTime
+
+        // Fire collision zone: radius ~14 units
+        if (!hitFire && distanceToFire < 14 && newPosition.z < -4) {
+          hitFire = true
+          hitFireTime = currentTime
+        }
 
         // Fade out based on distance
         const distance = newPosition.length()
@@ -103,20 +186,16 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
 
     // Clean up old inactive discs (keep only active ones and one inactive at center)
     setDiscs((prevDiscs) => {
-      const activeDiscs = prevDiscs.filter((disc) => disc.active)
-      const inactiveDiscs = prevDiscs.filter((disc) => !disc.active)
+      const activeDiscs = prevDiscs.filter((disc) => disc.active || disc.spawning)
+      const centerPosition = new Vector3(0, 2, 0)
+      const hasReadyDisc = prevDiscs.some(
+        (disc) => !disc.active && !disc.spawning && disc.position.distanceTo(centerPosition) < 0.1
+      )
 
-      // Find the inactive disc at center (position near 0,0,0)
-      const centerDisc = inactiveDiscs.find(d => d.position.length() < 0.5)
+      // Check if enough time has passed since last throw (1.5 second delay)
+      const canSpawn = (currentTime - lastThrowTime) >= 1.5
 
-      // Always keep active discs and the center disc
-      if (centerDisc) {
-        return [...activeDiscs, centerDisc]
-      } else if (inactiveDiscs.length > 0) {
-        // If no center disc, keep the first inactive one
-        return [...activeDiscs, inactiveDiscs[0]]
-      } else {
-        // If no inactive discs at all, create one with spawn animation
+      if (!hasReadyDisc && canSpawn && activeDiscs.length < 10) { // Limit to 10 logos max
         return [
           ...activeDiscs,
           {
@@ -126,7 +205,12 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
             rotationVelocity: new Vector3(0, 0, 0),
             opacity: 1,
             active: false,
-            spawnTime: state.clock.elapsedTime,
+            spawning: true,
+            spawnTime: currentTime,
+            scale: 0.1,
+            hitFire: false,
+            hitFireTime: 0,
+            spawnVelocity: new Vector3(0, 6, 0), // Initial upward velocity for bounce
           },
         ]
       }
