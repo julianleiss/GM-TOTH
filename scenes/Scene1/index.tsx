@@ -20,6 +20,9 @@ interface DiscState {
   rotationVelocity: Vector3
   opacity: number
   active: boolean
+  spawning: boolean
+  spawnTime: number
+  scale: number
 }
 
 function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
@@ -33,8 +36,12 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       rotationVelocity: new Vector3(0, 0, 0),
       opacity: 1,
       active: false,
+      spawning: false,
+      spawnTime: 0,
+      scale: 1,
     },
   ])
+  const [lastThrowTime, setLastThrowTime] = useState(0)
 
   // Detect mobile and optimize renderer
   useEffect(() => {
@@ -51,9 +58,37 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
   useFrame((state, delta) => {
     if (!isActive) return
 
+    const currentTime = state.clock.elapsedTime
+
     // Update discs physics
     setDiscs((prevDiscs) =>
       prevDiscs.map((disc) => {
+        // Handle spawning animation
+        if (disc.spawning) {
+          const spawnProgress = (currentTime - disc.spawnTime) / 0.4 // 0.4s spawn animation
+
+          if (spawnProgress >= 1) {
+            // Spawn animation complete
+            return {
+              ...disc,
+              spawning: false,
+              scale: 1,
+              opacity: 1,
+            }
+          }
+
+          // Bounce/jump animation using easing
+          const bounce = Math.sin(spawnProgress * Math.PI) * 0.5
+          const scaleAnim = Math.min(1, spawnProgress * 2) // Quick scale up
+
+          return {
+            ...disc,
+            position: new Vector3(0, 2 + bounce, 0),
+            scale: scaleAnim,
+            opacity: scaleAnim,
+          }
+        }
+
         if (!disc.active) return disc
 
         // Update position with velocity
@@ -66,9 +101,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           disc.rotationVelocity.clone().multiplyScalar(delta)
         )
 
-        // Apply gravity
+        // Apply gravity - stronger for heavier feel
         const newVelocity = disc.velocity.clone()
-        newVelocity.y -= 3 * delta // gravity
+        newVelocity.y -= 9.8 * delta // More realistic gravity (9.8 m/s²)
 
         // Fade out based on distance
         const distance = newPosition.length()
@@ -85,34 +120,40 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         const stillActive = distance < fadeEndDistance && newOpacity > 0
 
         return {
+          ...disc,
           position: newPosition,
           velocity: newVelocity,
           rotation: newRotation,
-          rotationVelocity: disc.rotationVelocity,
           opacity: newOpacity,
           active: stillActive,
         }
       })
     )
 
-    // Remove inactive discs and respawn if needed
+    // Remove inactive discs and respawn with delay
     setDiscs((prevDiscs) => {
-      const activeDiscs = prevDiscs.filter((disc) => disc.active)
+      const activeDiscs = prevDiscs.filter((disc) => disc.active || disc.spawning)
       const centerPosition = new Vector3(0, 2, 0)
-      const hasInactiveCenter = !prevDiscs.some(
-        (disc) => !disc.active && disc.position.distanceTo(centerPosition) < 0.1
+      const hasReadyDisc = prevDiscs.some(
+        (disc) => !disc.active && !disc.spawning && disc.position.distanceTo(centerPosition) < 0.1
       )
 
-      if (activeDiscs.length === 0 || (prevDiscs.some((disc) => !disc.active) && hasInactiveCenter)) {
+      // Check if enough time has passed since last throw (1 second delay)
+      const canSpawn = (currentTime - lastThrowTime) >= 1.0
+
+      if (!hasReadyDisc && canSpawn && activeDiscs.length < 10) { // Limit to 10 logos max
         return [
-          ...activeDiscs,
+          ...prevDiscs.filter(d => d.active || d.spawning),
           {
-            position: new Vector3(0, 2, 0), // Aligned with camera height
+            position: new Vector3(0, 2, 0),
             velocity: new Vector3(0, 0, 0),
             rotation: new Vector3(0, 0, 0),
             rotationVelocity: new Vector3(0, 0, 0),
-            opacity: 1,
+            opacity: 0,
             active: false,
+            spawning: true,
+            spawnTime: currentTime,
+            scale: 0.1,
           },
         ]
       }
@@ -122,27 +163,27 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
   })
 
   // Handle disc click/tap
-  const handleDiscClick = (discIndex: number) => {
+  const handleDiscClick = (discIndex: number, currentTime: number) => {
     const disc = discs[discIndex]
-    if (disc.active) return // Already thrown
+    if (disc.active || disc.spawning) return // Already thrown or still spawning
 
-    // Calculate throw direction
+    // Calculate throw direction - straight forward (camera facing direction)
     const throwDirection = new Vector3(0, 0, -1)
     throwDirection.applyQuaternion(camera.quaternion)
 
-    // Add some upward angle
-    throwDirection.y += 0.2
+    // Add slight upward angle for realistic arc
+    throwDirection.y += 0.15
     throwDirection.normalize()
 
-    // Set velocity (speed: 12 units/sec)
-    const throwSpeed = 12
+    // Set velocity - heavier/slower for realistic feel (like throwing a heavy disc)
+    const throwSpeed = 15 // Increased speed for more satisfying throw
     const velocity = throwDirection.multiplyScalar(throwSpeed)
 
-    // Set rotation velocity (spin)
+    // Set rotation velocity (realistic disc spin)
     const rotationVelocity = new Vector3(
-      Math.random() * 4 - 2, // random spin on x
-      8, // strong spin on y axis
-      Math.random() * 4 - 2  // random spin on z
+      Math.random() * 3 - 1.5, // slight random wobble on x
+      10, // strong frisbee spin on y axis
+      Math.random() * 3 - 1.5  // slight random wobble on z
     )
 
     setDiscs((prevDiscs) =>
@@ -153,17 +194,21 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
               velocity,
               rotationVelocity,
               active: true,
+              scale: 1,
             }
           : d
       )
     )
+
+    setLastThrowTime(currentTime)
   }
 
   // Handle scene click - throw the first available disc
   const handleSceneClick = () => {
-    const inactiveDiscIndex = discs.findIndex(disc => !disc.active)
-    if (inactiveDiscIndex !== -1) {
-      handleDiscClick(inactiveDiscIndex)
+    const currentTime = performance.now() / 1000 // Convert to seconds
+    const readyDiscIndex = discs.findIndex(disc => !disc.active && !disc.spawning)
+    if (readyDiscIndex !== -1) {
+      handleDiscClick(readyDiscIndex, currentTime)
     }
   }
 
@@ -245,6 +290,8 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           opacity={disc.opacity}
           isThrown={disc.active}
           camera={camera}
+          scale={disc.scale}
+          spawning={disc.spawning}
         />
       ))}
     </>
@@ -405,14 +452,19 @@ function Disc({
   opacity,
   isThrown,
   camera,
+  scale,
+  spawning,
 }: {
   position: Vector3
   rotation: Vector3
   opacity: number
   isThrown: boolean
   camera: any
+  scale: number
+  spawning: boolean
 }) {
   const meshRef = useRef<Mesh>(null)
+  const glowRef = useRef<any>(null)
 
   // Load the GM logo texture
   const logoTexture = useTexture('/images/GM_LOGO.png')
@@ -421,28 +473,49 @@ function Disc({
     if (meshRef.current && !isThrown) {
       // Make disc face camera when not thrown
       meshRef.current.lookAt(camera.position)
+      meshRef.current.scale.set(scale, scale, scale)
     } else if (meshRef.current && isThrown) {
       // Apply rotation when thrown
       meshRef.current.rotation.x = rotation.x
       meshRef.current.rotation.y = rotation.y
       meshRef.current.rotation.z = rotation.z
     }
+
+    // Pulse glow effect during spawn
+    if (glowRef.current && spawning) {
+      const pulse = Math.sin(Date.now() * 0.01) * 0.3 + 0.7
+      glowRef.current.intensity = 8 * pulse * scale
+    }
   })
 
   return (
-    <mesh
-      ref={meshRef}
-      position={[position.x, position.y, position.z]}
-    >
-      {/* Plane shape to display the logo image - 3x bigger */}
-      <planeGeometry args={[6, 6]} />
-      <meshBasicMaterial
-        map={logoTexture}
-        transparent
-        opacity={opacity}
-        side={DoubleSide}
-      />
-    </mesh>
+    <group>
+      {/* Spawn glow effect - bright flash like a video game */}
+      {spawning && (
+        <pointLight
+          ref={glowRef}
+          position={[position.x, position.y, position.z]}
+          color="#ffffff"
+          intensity={8}
+          distance={8}
+          decay={2}
+        />
+      )}
+
+      <mesh
+        ref={meshRef}
+        position={[position.x, position.y, position.z]}
+      >
+        {/* Plane shape to display the logo image - 3x bigger */}
+        <planeGeometry args={[6, 6]} />
+        <meshBasicMaterial
+          map={logoTexture}
+          transparent
+          opacity={opacity}
+          side={DoubleSide}
+        />
+      </mesh>
+    </group>
   )
 }
 
