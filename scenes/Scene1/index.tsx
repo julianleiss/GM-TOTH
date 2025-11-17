@@ -133,6 +133,14 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
     })
   })
 
+  // Store current time for spawning
+  const currentTimeRef = useRef(0)
+
+  // Update current time in every frame
+  useFrame((state) => {
+    currentTimeRef.current = state.clock.elapsedTime
+  })
+
   // Handle disc click/tap
   const handleDiscClick = (discIndex: number) => {
     const disc = discs[discIndex]
@@ -183,7 +191,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
             rotationVelocity: new Vector3(0, 0, 0),
             opacity: 1,
             active: false,
-            spawnTime: Date.now() / 1000, // Convert to seconds
+            spawnTime: currentTimeRef.current, // Use same clock as state.clock
           },
         ]
       }
@@ -478,7 +486,7 @@ function Disc({
 
       // Flash effect: bright at start, fade quickly
       const flash = timeSinceSpawn < SPAWN_DURATION ? Math.max(0, 1 - spawnProgress * 3) : 0
-      setFlashIntensity(flash * 15)
+      setFlashIntensity(flash * 5) // Reduced from 15 to 5 to prevent white ground
 
       // Easing function for bounce (easeOutBounce)
       const bounce = (t: number) => {
@@ -532,10 +540,10 @@ function Disc({
       {/* Flash light effect during spawn */}
       {!isThrown && flashIntensity > 0 && (
         <pointLight
-          position={[position.x, position.y, position.z + 2]}
+          position={[position.x, position.y + 2, position.z + 1]}
           intensity={flashIntensity}
           color="#ffffff"
-          distance={10}
+          distance={8}
           decay={2}
         />
       )}
