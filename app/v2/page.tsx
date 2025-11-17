@@ -1,29 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { SceneManager } from '@/components/SceneManager'
-import { registerAllScenes } from '@/lib/registerScenes'
 import Navigation from '@/components/Navigation'
 
-export default function Home() {
-  const [currentSceneId, setCurrentSceneId] = useState<string>('frisbee-disc-throw')
-  const [isReady, setIsReady] = useState(false)
-
-  // Register all scenes on mount
-  useEffect(() => {
-    registerAllScenes()
-    setIsReady(true)
-  }, [])
-
-  // Wait for scenes to be registered
-  if (!isReady) {
-    return (
-      <main className="w-screen h-screen bg-black flex items-center justify-center">
-        <div className="text-white">Loading...</div>
-      </main>
-    )
-  }
-
+export default function HomeV2() {
   return (
     <main className="w-screen h-screen overflow-hidden relative">
       {/* Background GIFs - Full Viewport */}
@@ -42,20 +21,8 @@ export default function Home() {
         />
       </div>
 
-      {/* Scene selector hidden - only one scene available */}
-
-      {/* 3D Scene - full screen */}
-      <div className="relative z-10 w-full h-full">
-        <SceneManager
-          initialSceneId={currentSceneId}
-          onSceneChange={setCurrentSceneId}
-          transition={{
-            type: 'fade',
-            duration: 500,
-            easing: 'ease-in-out',
-          }}
-        />
-      </div>
+      {/* Navigation Header */}
+      <Navigation />
     </main>
   )
 }
