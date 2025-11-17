@@ -321,7 +321,6 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           camera={camera}
           mousePos={mousePos}
           spawnTime={disc.spawnTime}
-          isMobile={isMobile}
         />
       ))}
     </>
@@ -487,7 +486,6 @@ function Disc({
   camera,
   mousePos,
   spawnTime,
-  isMobile,
 }: {
   position: Vector3
   rotation: Vector3
@@ -497,7 +495,6 @@ function Disc({
   camera: any
   mousePos: { x: number; y: number }
   spawnTime: number
-  isMobile: boolean
 }) {
   const meshRef = useRef<Mesh>(null)
   const [isHovered, setIsHovered] = useState(false)
@@ -564,7 +561,7 @@ function Disc({
 
       // Determine final scale based on device
       // Desktop: 30% smaller (0.7), Mobile: 50% smaller (0.5)
-      const finalScale = isMobile ? 0.5 : 0.7
+      const deviceScale = isMobile ? 0.5 : 0.7
 
       // Scale animation: start small, grow to device-specific size
       const scaleProgress = Math.min(spawnProgress * 1.5, 1)
@@ -572,7 +569,7 @@ function Disc({
 
       // Add interactive scale feedback: slightly larger when touching/hovering
       const interactiveScale = isTouching ? 1.08 : isHovered ? 1.04 : 1.0
-      const finalScale = baseScale * interactiveScale
+      const finalScale = baseScale * interactiveScale * deviceScale
 
       meshRef.current.scale.set(finalScale, finalScale, 1)
 
