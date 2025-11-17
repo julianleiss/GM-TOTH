@@ -98,17 +98,34 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       })
     )
 
-    // Clean up old inactive discs (keep only active ones and one inactive for throwing)
+    // Clean up old inactive discs (keep only active ones and one inactive at center)
     setDiscs((prevDiscs) => {
       const activeDiscs = prevDiscs.filter((disc) => disc.active)
       const inactiveDiscs = prevDiscs.filter((disc) => !disc.active)
 
-      // Keep active discs and only one inactive disc at center
-      if (inactiveDiscs.length > 0) {
-        return [...activeDiscs, inactiveDiscs[0]]
-      }
+      // Find the inactive disc at center (position near 0,0,0)
+      const centerDisc = inactiveDiscs.find(d => d.position.length() < 0.5)
 
-      return prevDiscs
+      // Always keep active discs and the center disc
+      if (centerDisc) {
+        return [...activeDiscs, centerDisc]
+      } else if (inactiveDiscs.length > 0) {
+        // If no center disc, keep the first inactive one
+        return [...activeDiscs, inactiveDiscs[0]]
+      } else {
+        // If no inactive discs at all, create one
+        return [
+          ...activeDiscs,
+          {
+            position: new Vector3(0, 0, 0),
+            velocity: new Vector3(0, 0, 0),
+            rotation: new Vector3(0, 0, 0),
+            rotationVelocity: new Vector3(0, 0, 0),
+            opacity: 1,
+            active: false,
+          },
+        ]
+      }
     })
   })
 
