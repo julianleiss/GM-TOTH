@@ -5,6 +5,9 @@ import { Canvas } from '@react-three/fiber'
 import { sceneRegistry } from '@/lib/sceneRegistry'
 import { SceneTransition } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import { useViewport, useTouchOptimized, getResponsiveFOV, getResponsiveCameraPosition } from '@/lib/hooks'
+import { LoadingOverlay } from '@/components/LoadingSpinner'
+import ErrorBoundary from '@/components/ErrorBoundary'
 
 interface SceneManagerProps {
   /** Initial scene ID to load */
@@ -28,14 +31,24 @@ export default function SceneManager({
 }: SceneManagerProps) {
   const [currentSceneId, setCurrentSceneId] = useState<string | null>(null)
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [opacity, setOpacity] = useState(1)
   const canvasRef = useRef<HTMLDivElement>(null)
   const cleanupRef = useRef<(() => void) | null>(null)
 
+  // Responsive viewport
+  const viewport = useViewport()
+
+  // Touch optimization
+  useTouchOptimized()
+
   // Initialize with first scene or specified initial scene
   useEffect(() => {
     const scenes = sceneRegistry.getAll()
-    if (scenes.length === 0) return
+    if (scenes.length === 0) {
+      setIsLoading(false)
+      return
+    }
 
     const initialScene = initialSceneId
       ? sceneRegistry.get(initialSceneId)
@@ -43,6 +56,7 @@ export default function SceneManager({
 
     if (initialScene) {
       setCurrentSceneId(initialScene.metadata.id)
+      setIsLoading(false)
     }
   }, [initialSceneId])
 
@@ -140,8 +154,25 @@ export default function SceneManager({
   const SceneComponent = currentScene.component
   const config = currentScene.config || {}
 
+  // Get responsive camera settings
+  const responsiveFOV = config.camera?.fov || getResponsiveFOV(viewport)
+  const responsiveCameraPosition = getResponsiveCameraPosition(
+    viewport,
+    config.camera?.position || [0, 0, 5]
+  )
+
+  // Calculate responsive pixel ratio
+  const pixelRatio = config.performance?.maxPixelRatio
+    ? Math.min(window.devicePixelRatio, config.performance.maxPixelRatio)
+    : viewport.isMobile
+    ? Math.min(window.devicePixelRatio, 2)
+    : window.devicePixelRatio
+
   return (
     <div ref={canvasRef} className={cn('relative w-full h-full', className)}>
+      {/* Loading overlay */}
+      {isLoading && <LoadingOverlay message="Loading scene..." />}
+
       <div
         className="w-full h-full transition-opacity"
         style={{
@@ -150,38 +181,38 @@ export default function SceneManager({
           transitionTimingFunction: transition.easing || 'ease-in-out',
         }}
       >
-        <Canvas
-          camera={{
-            position: config.camera?.position || [0, 0, 5],
-            fov: config.camera?.fov || 75,
-            near: config.camera?.near || 0.1,
-            far: config.camera?.far || 1000,
-          }}
-          shadows={config.performance?.shadows}
-          dpr={
-            config.performance?.maxPixelRatio
-              ? Math.min(window.devicePixelRatio, config.performance.maxPixelRatio)
-              : undefined
-          }
-          gl={{
-            antialias: config.performance?.antialias ?? true,
-          }}
-          className="w-full h-full"
-        >
-          <SceneComponent
-            isActive={!isTransitioning}
-            onReady={() => sceneRegistry.markAsLoaded(currentScene.metadata.id)}
-            onError={(error) => sceneRegistry.markAsError(currentScene.metadata.id, error)}
-          />
-        </Canvas>
+        <ErrorBoundary>
+          <Canvas
+            camera={{
+              position: responsiveCameraPosition,
+              fov: responsiveFOV,
+              near: config.camera?.near || 0.1,
+              far: config.camera?.far || 1000,
+            }}
+            shadows={config.performance?.shadows}
+            dpr={pixelRatio}
+            gl={{
+              antialias: config.performance?.antialias ?? true,
+              powerPreference: viewport.isMobile ? 'low-power' : 'high-performance',
+            }}
+            className="w-full h-full"
+            style={{ touchAction: 'none' }}
+          >
+            <SceneComponent
+              isActive={!isTransitioning}
+              onReady={() => sceneRegistry.markAsLoaded(currentScene.metadata.id)}
+              onError={(error) => sceneRegistry.markAsError(currentScene.metadata.id, error)}
+            />
+          </Canvas>
+        </ErrorBoundary>
       </div>
 
-      {/* Scene info overlay */}
-      <div className="absolute top-4 left-4 pointer-events-none">
-        <div className="bg-black/50 backdrop-blur-sm rounded-lg px-4 py-2 text-white">
-          <h2 className="text-lg font-semibold">{currentScene.metadata.name}</h2>
-          {currentScene.metadata.description && (
-            <p className="text-sm opacity-80">{currentScene.metadata.description}</p>
+      {/* Scene info overlay - responsive */}
+      <div className="absolute top-2 left-2 md:top-4 md:left-4 pointer-events-none z-10">
+        <div className="bg-black/50 backdrop-blur-sm rounded-lg px-3 py-1.5 md:px-4 md:py-2 text-white">
+          <h2 className="text-sm md:text-lg font-semibold">{currentScene.metadata.name}</h2>
+          {currentScene.metadata.description && !viewport.isMobile && (
+            <p className="text-xs md:text-sm opacity-80">{currentScene.metadata.description}</p>
           )}
         </div>
       </div>

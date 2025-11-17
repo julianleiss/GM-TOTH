@@ -16,18 +16,19 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between">
       <div className="w-full h-screen flex flex-col">
-        {/* Header */}
-        <header className="w-full p-6 bg-gradient-to-r from-indigo-500 to-purple-600 text-white relative z-10">
+        {/* Header - responsive */}
+        <header className="w-full p-3 md:p-6 bg-gradient-to-r from-indigo-500 to-purple-600 text-white relative z-10">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold">GM</h1>
-              <p className="text-sm opacity-90">Generative Micro-scenes</p>
+              <h1 className="text-2xl md:text-4xl font-bold">GM</h1>
+              <p className="text-xs md:text-sm opacity-90">Generative Micro-scenes</p>
             </div>
             <button
               onClick={() => setIsSelectorOpen(true)}
-              className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors backdrop-blur-sm"
+              className="px-3 py-1.5 md:px-4 md:py-2 text-sm md:text-base bg-white/20 hover:bg-white/30 rounded-lg transition-colors backdrop-blur-sm no-select"
             >
-              Browse Scenes
+              <span className="hidden sm:inline">Browse Scenes</span>
+              <span className="sm:hidden">Browse</span>
             </button>
           </div>
         </header>
@@ -56,14 +57,14 @@ export default function Home() {
             position="center"
           />
 
-          {/* Quick scene switcher button */}
+          {/* Quick scene switcher button - responsive */}
           <button
             onClick={() => setIsSelectorOpen(true)}
-            className="absolute bottom-6 right-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-4 shadow-xl transition-all hover:scale-110 z-30"
+            className="absolute bottom-4 right-4 md:bottom-6 md:right-6 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-full p-3 md:p-4 shadow-xl transition-all hover:scale-110 active:scale-95 z-30 no-select"
             aria-label="Open scene selector"
           >
             <svg
-              className="w-6 h-6"
+              className="w-5 h-5 md:w-6 md:h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -78,11 +79,13 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Footer */}
-        <footer className="w-full p-4 bg-gray-800 text-white text-center text-sm relative z-10">
-          <p>Interactive 3D experience powered by Three.js & Next.js</p>
+        {/* Footer - responsive */}
+        <footer className="w-full p-3 md:p-4 bg-gray-800 text-white text-center text-xs md:text-sm relative z-10">
+          <p className="hidden sm:block">Interactive 3D experience powered by Three.js & Next.js</p>
+          <p className="sm:hidden">3D experience • Three.js & Next.js</p>
           <p className="text-xs mt-1 opacity-70">
-            Use mouse to rotate • Scroll to zoom • Click Browse to switch scenes
+            <span className="hidden md:inline">Use mouse to rotate • Scroll to zoom • Click Browse to switch scenes</span>
+            <span className="md:hidden">Drag to rotate • Pinch to zoom</span>
           </p>
         </footer>
       </div>
