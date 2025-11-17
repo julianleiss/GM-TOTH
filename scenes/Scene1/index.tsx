@@ -27,7 +27,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
   const [isMobile, setIsMobile] = useState(false)
   const [discs, setDiscs] = useState<DiscState[]>([
     {
-      position: new Vector3(0, 0, 0),
+      position: new Vector3(0, 2, 0), // Aligned with camera height for proper visibility
       velocity: new Vector3(0, 0, 0),
       rotation: new Vector3(0, 0, 0),
       rotationVelocity: new Vector3(0, 0, 0),
@@ -98,15 +98,16 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
     // Remove inactive discs and respawn if needed
     setDiscs((prevDiscs) => {
       const activeDiscs = prevDiscs.filter((disc) => disc.active)
+      const centerPosition = new Vector3(0, 2, 0)
       const hasInactiveCenter = !prevDiscs.some(
-        (disc) => !disc.active && disc.position.length() < 0.1
+        (disc) => !disc.active && disc.position.distanceTo(centerPosition) < 0.1
       )
 
       if (activeDiscs.length === 0 || (prevDiscs.some((disc) => !disc.active) && hasInactiveCenter)) {
         return [
           ...activeDiscs,
           {
-            position: new Vector3(0, 0, 0),
+            position: new Vector3(0, 2, 0), // Aligned with camera height
             velocity: new Vector3(0, 0, 0),
             rotation: new Vector3(0, 0, 0),
             rotationVelocity: new Vector3(0, 0, 0),
