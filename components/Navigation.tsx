@@ -39,7 +39,7 @@ export default function Navigation() {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-sm">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-black">
       <div className="w-full px-4 md:px-8 py-4">
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center justify-between">
@@ -128,26 +128,26 @@ export default function Navigation() {
 
         {/* Mobile Navigation */}
         <div className="flex md:hidden items-center justify-between">
-          {/* Left - Hamburger Menu */}
+          {/* Left - Artist Name */}
+          <div
+            className="text-white font-bold"
+            style={{ fontSize: '12px', fontFamily: 'Arial, sans-serif' }}
+          >
+            CA7RIEL & PACO AMOROSO
+          </div>
+
+          {/* Right - Hamburger Menu */}
           <button
             onClick={toggleMenu}
             className="text-white p-2 focus:outline-none"
             aria-label="Toggle menu"
           >
-            <div className="w-6 h-5 flex flex-col justify-between">
-              <span className={`block h-0.5 w-full bg-white transition-all ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+            <div className="w-5 h-4 flex flex-col justify-between">
+              <span className={`block h-0.5 w-full bg-white transition-all ${isMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
               <span className={`block h-0.5 w-full bg-white transition-all ${isMenuOpen ? 'opacity-0' : ''}`}></span>
-              <span className={`block h-0.5 w-full bg-white transition-all ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+              <span className={`block h-0.5 w-full bg-white transition-all ${isMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
             </div>
           </button>
-
-          {/* Right - Artist Name */}
-          <div
-            className="text-white font-bold"
-            style={{ fontSize: '14px', fontFamily: 'Arial, sans-serif' }}
-          >
-            CA7RIEL & PACO AMOROSO
-          </div>
         </div>
 
         {/* Mobile Menu Dropdown */}
