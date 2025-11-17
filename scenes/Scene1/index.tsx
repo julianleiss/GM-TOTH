@@ -321,7 +321,6 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           camera={camera}
           mousePos={mousePos}
           spawnTime={disc.spawnTime}
-          isMobile={isMobile}
         />
       ))}
     </>
@@ -487,7 +486,6 @@ function Disc({
   camera,
   mousePos,
   spawnTime,
-  isMobile,
 }: {
   position: Vector3
   rotation: Vector3
@@ -497,7 +495,6 @@ function Disc({
   camera: any
   mousePos: { x: number; y: number }
   spawnTime: number
-  isMobile: boolean
 }) {
   const meshRef = useRef<Mesh>(null)
   const [isHovered, setIsHovered] = useState(false)
