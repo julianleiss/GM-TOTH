@@ -187,9 +187,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         position={[0, -1, -8]}
         scale={14.0}
         color="#ff3300"
-        magnitude={0.5}
-        lacunarity={0.8}
-        gain={0.3}
+        magnitude={0.3}
+        lacunarity={0.5}
+        gain={0.2}
       />
 
       {/* Mid flame - bright orange */}
@@ -198,9 +198,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         position={[0, -1, -8]}
         scale={14.8}
         color="#ff6600"
-        magnitude={0.45}
-        lacunarity={0.75}
-        gain={0.32}
+        magnitude={0.25}
+        lacunarity={0.5}
+        gain={0.22}
       />
 
       {/* Outer flame - yellow tips (skip on mobile for performance) */}
@@ -210,9 +210,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           position={[0, -1, -8]}
           scale={15.4}
           color="#ffaa00"
-          magnitude={0.4}
-          lacunarity={0.7}
-          gain={0.35}
+          magnitude={0.2}
+          lacunarity={0.45}
+          gain={0.25}
         />
       )}
 
@@ -476,7 +476,7 @@ export const frisbeeDiscThrowScene: Scene = {
   config: {
     camera: {
       position: [0, 2, 8],
-      fov: 60,
+      fov: 75,
     },
     lighting: 'studio',
     performance: {
