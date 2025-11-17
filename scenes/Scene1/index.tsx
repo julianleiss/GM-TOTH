@@ -449,6 +449,12 @@ function Disc({
   const meshRef = useRef<Mesh>(null)
   const [isHovered, setIsHovered] = useState(false)
   const [isTouching, setIsTouching] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Detect mobile on mount
+  useEffect(() => {
+    setIsMobile(isMobileDevice())
+  }, [])
 
   // Load the GM logo texture
   const logoTexture = useTexture('/images/GM_LOGO.png')
@@ -578,7 +584,8 @@ function Disc({
         }}
       >
         {/* Plane shape to display the logo image - larger size for better visibility */}
-        <planeGeometry args={[12, 12]} />
+        {/* Mobile: 6x6 (half size), Desktop: 12x12 */}
+        <planeGeometry args={isMobile ? [6, 6] : [12, 12]} />
         <meshBasicMaterial
           map={logoTexture}
           transparent
