@@ -80,9 +80,11 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
 
           if (spawnProgress >= 1) {
             // Spawn animation complete
+            console.log('[Scene1] Spawn animation complete for disc, setting to idle state')
             return {
               ...disc,
               spawning: false,
+              active: false,
               scale: 1,
               opacity: 1,
             }
@@ -431,10 +433,20 @@ function Disc({
   // Load the GM logo texture
   const logoTexture = useTexture('/images/GM_LOGO.png')
 
-  // Debug: log disc render state once
+  // Debug: log disc render state
+  const loggedOnce = useRef(false)
+  const frameCount = useRef(0)
   useEffect(() => {
-    console.log('[Disc] Rendered with state:', { isThrown, spawning, opacity, scale })
+    if (!loggedOnce.current) {
+      console.log('[Disc] Rendered with state:', { isThrown, spawning, opacity, scale, position })
+      loggedOnce.current = true
+    }
   }, [])
+
+  // Log state changes
+  useEffect(() => {
+    console.log('[Disc] State changed:', { isThrown, spawning, opacity, scale })
+  }, [isThrown, spawning, opacity, scale])
 
   useFrame((state) => {
     if (meshRef.current && !isThrown && !spawning) {
@@ -512,7 +524,7 @@ function Disc({
         position={[0, 0, 0]}
       >
         {/* Plane shape to display the logo image */}
-        <planeGeometry args={[4, 4]} />
+        <planeGeometry args={[3, 3]} />
         <meshBasicMaterial
           map={logoTexture}
           transparent
@@ -536,7 +548,7 @@ export const frisbeeDiscThrowScene: Scene = {
   config: {
     camera: {
       position: [0, 2, 8],
-      fov: 90,
+      fov: 70,
     },
     lighting: 'studio',
     performance: {
