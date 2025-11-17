@@ -57,6 +57,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
   useFrame((state, delta) => {
     if (!isActive) return
 
+    // Update current time ref for spawning
+    currentTimeRef.current = state.clock.elapsedTime
+
     // Update discs physics
     setDiscs((prevDiscs) =>
       prevDiscs.map((disc) => {
@@ -110,18 +113,15 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       // Find the inactive disc at center (position near 0,0,0)
       const centerDisc = inactiveDiscs.find(d => d.position.length() < 0.5)
 
-      // Always keep active discs and the center disc
+      // Always keep active discs and the center disc if it exists
       if (centerDisc) {
         return [...activeDiscs, centerDisc]
-      } else if (inactiveDiscs.length > 0) {
-        // If no center disc, keep the first inactive one
-        return [...activeDiscs, inactiveDiscs[0]]
       } else {
-        // Check if enough time has passed since last throw (1.5 second delay)
+        // No center disc exists - need to create one
         const currentTime = state.clock.elapsedTime
         const canSpawn = lastThrowTimeRef.current === 0 || (currentTime - lastThrowTimeRef.current) >= 1.5
 
-        // If no inactive discs at all and enough time has passed, create one with spawn animation
+        // If enough time has passed, create a new disc at center with spawn animation
         if (canSpawn) {
           return [
             ...activeDiscs,
@@ -137,7 +137,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           ]
         }
 
-        // If not enough time has passed, just return active discs
+        // If not enough time has passed, return only active discs (discard any inactive discs not at center)
         return activeDiscs
       }
     })
@@ -145,11 +145,6 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
 
   // Store current time for spawning
   const currentTimeRef = useRef(0)
-
-  // Update current time in every frame
-  useFrame((state) => {
-    currentTimeRef.current = state.clock.elapsedTime
-  })
 
   // Handle disc click/tap
   const handleDiscClick = (discIndex: number) => {
