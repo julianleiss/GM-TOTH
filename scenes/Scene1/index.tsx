@@ -1,8 +1,8 @@
 'use client'
 
-import { useRef, useState, useMemo, useEffect } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { Mesh, Vector3, AdditiveBlending, Points, BufferAttribute, CanvasTexture, PlaneGeometry, MeshBasicMaterial, DoubleSide } from 'three'
+import { Mesh, Vector3, DoubleSide } from 'three'
 import { useTexture } from '@react-three/drei'
 import { Scene, SceneProps } from '@/lib/types'
 import { Fire } from '@wolffo/three-fire/react'
@@ -20,6 +20,11 @@ interface DiscState {
   rotationVelocity: Vector3
   opacity: number
   active: boolean
+  spawning: boolean
+  spawnTime: number
+  scale: number
+  hitFire: boolean
+  hitFireTime: number
 }
 
 function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
@@ -27,14 +32,20 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
   const [isMobile, setIsMobile] = useState(false)
   const [discs, setDiscs] = useState<DiscState[]>([
     {
-      position: new Vector3(0, 0, 0),
+      position: new Vector3(0, 2, 0), // Aligned with camera height for proper visibility
       velocity: new Vector3(0, 0, 0),
       rotation: new Vector3(0, 0, 0),
       rotationVelocity: new Vector3(0, 0, 0),
       opacity: 1,
       active: false,
+      spawning: false,
+      spawnTime: 0,
+      scale: 1,
+      hitFire: false,
+      hitFireTime: 0,
     },
   ])
+  const [lastThrowTime, setLastThrowTime] = useState(0)
 
   // Track mouse position (normalized device coordinates)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
@@ -51,9 +62,37 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
   useFrame((state, delta) => {
     if (!isActive) return
 
+    const currentTime = state.clock.elapsedTime
+
     // Update discs physics
     setDiscs((prevDiscs) =>
       prevDiscs.map((disc) => {
+        // Handle spawning animation
+        if (disc.spawning) {
+          const spawnProgress = (currentTime - disc.spawnTime) / 0.4 // 0.4s spawn animation
+
+          if (spawnProgress >= 1) {
+            // Spawn animation complete
+            return {
+              ...disc,
+              spawning: false,
+              scale: 1,
+              opacity: 1,
+            }
+          }
+
+          // Bounce/jump animation using easing
+          const bounce = Math.sin(spawnProgress * Math.PI) * 0.5
+          const scaleAnim = Math.min(1, spawnProgress * 2) // Quick scale up
+
+          return {
+            ...disc,
+            position: new Vector3(0, 2 + bounce, 0),
+            scale: scaleAnim,
+            opacity: scaleAnim,
+          }
+        }
+
         if (!disc.active) return disc
 
         // Update position with velocity
@@ -66,9 +105,21 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           disc.rotationVelocity.clone().multiplyScalar(delta)
         )
 
-        // Apply gravity
+        // Apply gravity - stronger for heavier feel
         const newVelocity = disc.velocity.clone()
-        newVelocity.y -= 3 * delta // gravity
+        newVelocity.y -= 9.8 * delta // More realistic gravity (9.8 m/s²)
+
+        // Check collision with fire (fire is at [0, -1, -8])
+        const fireCenter = new Vector3(0, 0, -8)
+        const distanceToFire = newPosition.distanceTo(fireCenter)
+        let hitFire = disc.hitFire
+        let hitFireTime = disc.hitFireTime
+
+        // Fire collision zone: radius ~7 units
+        if (!hitFire && distanceToFire < 7 && newPosition.z < -4) {
+          hitFire = true
+          hitFireTime = currentTime
+        }
 
         // Fade out based on distance
         const distance = newPosition.length()
@@ -81,37 +132,54 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           newOpacity = Math.max(0, 1 - fadeProgress)
         }
 
+        // Quick fade when hitting fire
+        if (hitFire) {
+          const timeSinceHit = currentTime - hitFireTime
+          newOpacity = Math.max(0, 1 - timeSinceHit * 3) // Fade out in 0.33 seconds
+        }
+
         // Deactivate if too far or fully faded
         const stillActive = distance < fadeEndDistance && newOpacity > 0
 
         return {
+          ...disc,
           position: newPosition,
           velocity: newVelocity,
           rotation: newRotation,
-          rotationVelocity: disc.rotationVelocity,
           opacity: newOpacity,
           active: stillActive,
+          hitFire,
+          hitFireTime,
         }
       })
     )
 
-    // Remove inactive discs and respawn if needed
+    // Remove inactive discs and respawn with delay
     setDiscs((prevDiscs) => {
-      const activeDiscs = prevDiscs.filter((disc) => disc.active)
-      const hasInactiveCenter = !prevDiscs.some(
-        (disc) => !disc.active && disc.position.length() < 0.1
+      const activeDiscs = prevDiscs.filter((disc) => disc.active || disc.spawning)
+      const centerPosition = new Vector3(0, 2, 0)
+      const hasReadyDisc = prevDiscs.some(
+        (disc) => !disc.active && !disc.spawning && disc.position.distanceTo(centerPosition) < 0.1
       )
 
-      if (activeDiscs.length === 0 || (prevDiscs.some((disc) => !disc.active) && hasInactiveCenter)) {
+      // Check if enough time has passed since last throw (1 second delay)
+      const canSpawn = (currentTime - lastThrowTime) >= 1.0
+
+      if (!hasReadyDisc && canSpawn && activeDiscs.length < 10) { // Limit to 10 logos max
         return [
-          ...activeDiscs,
+          ...prevDiscs.filter(d => d.active || d.spawning),
           {
-            position: new Vector3(0, 0, 0),
+            position: new Vector3(0, 2, 0),
             velocity: new Vector3(0, 0, 0),
             rotation: new Vector3(0, 0, 0),
             rotationVelocity: new Vector3(0, 0, 0),
-            opacity: 1,
+            opacity: 0,
             active: false,
+            spawning: true,
+            spawnTime: currentTime,
+            scale: 0.1,
+            hitFire: false,
+            hitFireTime: 0,
           },
         ]
       }
@@ -121,29 +189,27 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
   })
 
   // Handle disc click/tap
-  const handleDiscClick = (discIndex: number) => {
+  const handleDiscClick = (discIndex: number, currentTime: number) => {
     const disc = discs[discIndex]
-    if (disc.active) return // Already thrown
+    if (disc.active || disc.spawning) return // Already thrown or still spawning
 
-    // Calculate throw direction based on mouse position
-    // Use mouse position to determine horizontal and vertical direction
-    const throwDirection = new Vector3(
-      mousePos.x * 1.5, // Horizontal based on mouse X
-      mousePos.y * 1.5 + 0.3, // Vertical based on mouse Y, plus base upward angle
-      -1 // Always throw forward
-    )
+    // Calculate throw direction - straight forward (camera facing direction)
+    const throwDirection = new Vector3(0, 0, -1)
     throwDirection.applyQuaternion(camera.quaternion)
+
+    // Add slight upward angle for realistic arc
+    throwDirection.y += 0.15
     throwDirection.normalize()
 
-    // Set velocity (speed: 18 units/sec)
-    const throwSpeed = 18
+    // Set velocity - heavier/slower for realistic feel (like throwing a heavy disc)
+    const throwSpeed = 15 // Increased speed for more satisfying throw
     const velocity = throwDirection.multiplyScalar(throwSpeed)
 
-    // Stone-like throw: minimal rotation (just a slight tumble)
+    // Set rotation velocity (realistic disc spin)
     const rotationVelocity = new Vector3(
-      Math.random() * 2 - 1, // minimal spin on x
-      Math.random() * 2 - 1, // minimal spin on y
-      Math.random() * 2 - 1  // minimal spin on z
+      Math.random() * 3 - 1.5, // slight random wobble on x
+      10, // strong frisbee spin on y axis
+      Math.random() * 3 - 1.5  // slight random wobble on z
     )
 
     setDiscs((prevDiscs) =>
@@ -154,14 +220,36 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
               velocity,
               rotationVelocity,
               active: true,
+              scale: 1,
             }
           : d
       )
     )
+
+    setLastThrowTime(currentTime)
+  }
+
+  // Handle scene click - throw the first available disc
+  const handleSceneClick = () => {
+    const currentTime = performance.now() / 1000 // Convert to seconds
+    const readyDiscIndex = discs.findIndex(disc => !disc.active && !disc.spawning)
+    if (readyDiscIndex !== -1) {
+      handleDiscClick(readyDiscIndex, currentTime)
+    }
   }
 
   return (
     <>
+      {/* Invisible click plane covering the entire viewport */}
+      <mesh
+        position={[0, 0, 0]}
+        onClick={handleSceneClick}
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        <planeGeometry args={[100, 100]} />
+        <meshBasicMaterial transparent opacity={0} />
+      </mesh>
+
       {/* Black ground plane */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -3, 0]} receiveShadow>
         <planeGeometry args={[100, 100]} />
@@ -216,180 +304,73 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         />
       )}
 
-      {/* Smoke effect - single optimized instance */}
-      <SmokeParticles isActive={isActive} isMobile={isMobile} />
-
-      {/* Mouse tracking group */}
-      <group onPointerMove={handleMouseMove}>
-        {/* Invisible plane to capture mouse events */}
-        <mesh position={[0, 0, 0]} visible={false}>
-          <planeGeometry args={[100, 100]} />
-          <meshBasicMaterial transparent opacity={0} />
-        </mesh>
-      </group>
-
-      {/* Logo discs */}
+      {/* Frisbee discs */}
       {discs.map((disc, index) => (
         <Disc
           key={`disc-${index}`}
           position={disc.position}
           rotation={disc.rotation}
           opacity={disc.opacity}
-          onClick={() => handleDiscClick(index)}
           isThrown={disc.active}
           camera={camera}
-          mousePos={mousePos}
+          scale={disc.scale}
+          spawning={disc.spawning}
+          hitFire={disc.hitFire}
+          hitFireTime={disc.hitFireTime}
         />
       ))}
+
+      {/* Fire collision effects */}
+      {discs.map((disc, index) =>
+        disc.hitFire && (
+          <FireCollisionEffect
+            key={`fire-effect-${index}`}
+            position={disc.position}
+            startTime={disc.hitFireTime}
+          />
+        )
+      )}
     </>
   )
 }
 
-// Generate procedural smoke texture
-function generateSmokeTexture(): CanvasTexture {
-  const canvas = document.createElement('canvas')
-  canvas.width = 256
-  canvas.height = 256
+// Fire collision effect - explosion when logo hits fire
+function FireCollisionEffect({
+  position,
+  startTime,
+}: {
+  position: Vector3
+  startTime: number
+}) {
+  const explosionLightRef = useRef<any>(null)
 
-  const ctx = canvas.getContext('2d')!
-  const centerX = canvas.width / 2
-  const centerY = canvas.height / 2
+  useFrame((state) => {
+    if (!explosionLightRef.current) return
 
-  // Create radial gradient for smoke
-  const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, canvas.width / 2)
-  gradient.addColorStop(0, 'rgba(200, 200, 200, 0.5)')
-  gradient.addColorStop(0.2, 'rgba(150, 150, 150, 0.4)')
-  gradient.addColorStop(0.4, 'rgba(100, 100, 100, 0.2)')
-  gradient.addColorStop(0.7, 'rgba(50, 50, 50, 0.1)')
-  gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
+    const elapsed = state.clock.elapsedTime - startTime
 
-  ctx.fillStyle = gradient
-  ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-  // Add noise for texture
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-  const data = imageData.data
-
-  for (let i = 0; i < data.length; i += 4) {
-    const noise = Math.random() * 40 - 20
-    data[i] = Math.max(0, Math.min(255, data[i] + noise))
-    data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise))
-    data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise))
-  }
-
-  ctx.putImageData(imageData, 0, 0)
-
-  const texture = new CanvasTexture(canvas)
-  return texture
-}
-
-// Smoke Particles Component - Mesh-based with rotation (like sbrl example)
-function SmokeParticles({ isActive, isMobile }: { isActive?: boolean; isMobile?: boolean }) {
-  const groupRef = useRef<any>(null)
-  const smokeTexture = useMemo(() => generateSmokeTexture(), [])
-
-  // Create smoke mesh particles
-  const smokeParticles = useMemo(() => {
-    const particles: {
-      mesh: Mesh
-      velocity: Vector3
-      rotationSpeed: number
-    }[] = []
-
-    const geometry = new PlaneGeometry(10, 10)
-    const particleCount = isMobile ? 10 : 15 // Further reduced on mobile
-
-    for (let i = 0; i < particleCount; i++) {
-      const material = new MeshBasicMaterial({
-        map: smokeTexture,
-        transparent: true,
-        opacity: 0.35, // Slightly reduced for better performance
-        depthWrite: false,
-        side: DoubleSide,
-      })
-
-      const mesh = new Mesh(geometry, material)
-
-      // Start position at fire top
-      const angle = Math.random() * Math.PI * 2
-      const radius = Math.random() * 1.0
-      mesh.position.set(
-        Math.cos(angle) * radius,
-        0.5 + Math.random() * 0.5,
-        Math.sin(angle) * radius
-      )
-
-      // Random initial rotation
-      mesh.rotation.z = Math.random() * Math.PI * 2
-      const initialSize = 0.5 + Math.random() * 3.5
-      mesh.scale.set(initialSize, initialSize, 1)
-
-      particles.push({
-        mesh,
-        velocity: new Vector3(
-          (Math.random() - 0.5) * 0.3,
-          0.4 + Math.random() * 0.4,
-          (Math.random() - 0.5) * 0.3
-        ),
-        rotationSpeed: (Math.random() - 0.5) * 0.3,
-      })
+    if (elapsed < 0.5) {
+      // Explosion flash - quick bright burst
+      const intensity = Math.max(0, 20 * (1 - elapsed / 0.5))
+      explosionLightRef.current.intensity = intensity
+    } else {
+      explosionLightRef.current.intensity = 0
     }
-
-    return particles
-  }, [smokeTexture, isMobile])
-
-  // Add meshes to group
-  useMemo(() => {
-    if (groupRef.current) {
-      smokeParticles.forEach(p => groupRef.current.add(p.mesh))
-    }
-  }, [smokeParticles])
-
-  // Animate smoke - evolveSmoke pattern
-  useFrame((state, delta) => {
-    if (!isActive) return
-
-    smokeParticles.forEach((particle) => {
-      // Update position
-      particle.mesh.position.x += particle.velocity.x * delta
-      particle.mesh.position.y += particle.velocity.y * delta
-      particle.mesh.position.z += particle.velocity.z * delta
-
-      // Rotate smoke (key feature from sbrl example)
-      particle.mesh.rotation.z += delta * particle.rotationSpeed
-
-      // Add turbulence
-      particle.mesh.position.x += Math.sin(state.clock.elapsedTime * 0.3 + particle.mesh.position.y) * delta * 0.2
-      particle.mesh.position.z += Math.cos(state.clock.elapsedTime * 0.3 + particle.mesh.position.y) * delta * 0.2
-
-      // Fade out as it rises
-      const opacity = Math.max(0, 0.4 - (particle.mesh.position.y / 15) * 0.4)
-      ;(particle.mesh.material as MeshBasicMaterial).opacity = opacity
-
-      // Reset particle when too high or faded
-      if (particle.mesh.position.y > 10 || opacity <= 0) {
-        const angle = Math.random() * Math.PI * 2
-        const radius = Math.random() * 1.0
-        particle.mesh.position.set(
-          Math.cos(angle) * radius,
-          0.5 + Math.random() * 0.5,
-          Math.sin(angle) * radius
-        )
-        particle.velocity.set(
-          (Math.random() - 0.5) * 0.3,
-          0.4 + Math.random() * 0.4,
-          (Math.random() - 0.5) * 0.3
-        )
-        particle.mesh.rotation.z = Math.random() * Math.PI * 2
-        ;(particle.mesh.material as MeshBasicMaterial).opacity = 0.4
-      }
-
-      // Slow down
-      particle.velocity.multiplyScalar(0.99)
-    })
   })
 
-  return <group ref={groupRef} position={[0, 0, -2]} />
+  return (
+    <>
+      {/* Bright explosion flash */}
+      <pointLight
+        ref={explosionLightRef}
+        position={[position.x, position.y, position.z]}
+        color="#ffaa00"
+        intensity={20}
+        distance={15}
+        decay={2}
+      />
+    </>
+  )
 }
 
 // Disc component - now displays GM logo
@@ -397,70 +378,116 @@ function Disc({
   position,
   rotation,
   opacity,
-  onClick,
   isThrown,
   camera,
-  mousePos,
+  scale,
+  spawning,
+  hitFire,
+  hitFireTime,
 }: {
   position: Vector3
   rotation: Vector3
   opacity: number
-  onClick: () => void
   isThrown: boolean
   camera: any
-  mousePos: { x: number; y: number }
+  scale: number
+  spawning: boolean
+  hitFire: boolean
+  hitFireTime: number
 }) {
   const meshRef = useRef<Mesh>(null)
+  const groupRef = useRef<any>(null)
+  const glowRef = useRef<any>(null)
+  const idleGlowRef = useRef<any>(null)
 
   // Load the GM logo texture
   const logoTexture = useTexture('/images/GM_LOGO.png')
 
-  useFrame(() => {
-    if (meshRef.current && !isThrown) {
-      // Make logo slightly follow mouse cursor to indicate throw angle
-      const followAmount = 0.3 // How much to follow the cursor (0 = none, 1 = full)
-      const targetX = position.x + mousePos.x * followAmount
-      const targetY = position.y + mousePos.y * followAmount
+  useFrame((state) => {
+    if (meshRef.current && !isThrown && !spawning) {
+      // Constant rotation when idle
+      meshRef.current.rotation.z += 0.01
 
-      meshRef.current.position.x = targetX
-      meshRef.current.position.y = targetY
-
-      // Make disc face camera when not thrown
+      // Make disc face camera
       meshRef.current.lookAt(camera.position)
+      meshRef.current.scale.set(scale, scale, scale)
 
-      // Add slight tilt based on mouse position for visual feedback
-      meshRef.current.rotation.z = -mousePos.x * 0.2
-      meshRef.current.rotation.x += mousePos.y * 0.1
+      // Idle floating animation
+      const floatY = Math.sin(state.clock.elapsedTime * 1.5) * 0.1
+      const floatX = Math.sin(state.clock.elapsedTime * 0.8) * 0.05
+      if (groupRef.current) {
+        groupRef.current.position.set(
+          position.x + floatX,
+          position.y + floatY,
+          position.z
+        )
+      }
     } else if (meshRef.current && isThrown) {
       // Apply rotation when thrown
       meshRef.current.rotation.x = rotation.x
       meshRef.current.rotation.y = rotation.y
       meshRef.current.rotation.z = rotation.z
+
+      if (groupRef.current) {
+        groupRef.current.position.set(position.x, position.y, position.z)
+      }
+    } else if (groupRef.current && spawning) {
+      groupRef.current.position.set(position.x, position.y, position.z)
+    }
+
+    // Pulse glow effect during spawn
+    if (glowRef.current && spawning) {
+      const pulse = Math.sin(Date.now() * 0.01) * 0.3 + 0.7
+      glowRef.current.intensity = 8 * pulse * scale
+    }
+
+    // Soft glow when idle
+    if (idleGlowRef.current && !isThrown && !spawning) {
+      const idlePulse = Math.sin(state.clock.elapsedTime * 2) * 0.3 + 0.7
+      idleGlowRef.current.intensity = 2 * idlePulse
     }
   })
 
   return (
-    <mesh
-      ref={meshRef}
-      position={[position.x, position.y, position.z]}
-      onClick={(e) => {
-        e.stopPropagation()
-        onClick()
-      }}
-      onPointerDown={(e) => {
-        e.stopPropagation()
-      }}
-    >
-      {/* Plane shape to display the logo image - larger size for better visibility */}
-      <planeGeometry args={[4.5, 4.5]} />
-      <meshBasicMaterial
-        map={logoTexture}
-        transparent
-        opacity={opacity}
-        side={DoubleSide}
-        toneMapped={false}
-      />
-    </mesh>
+    <group ref={groupRef}>
+      {/* Spawn glow effect - bright flash like a video game */}
+      {spawning && (
+        <pointLight
+          ref={glowRef}
+          position={[0, 0, 0]}
+          color="#ffffff"
+          intensity={8}
+          distance={8}
+          decay={2}
+        />
+      )}
+
+      {/* Idle glow effect - soft permanent glow */}
+      {!isThrown && !spawning && (
+        <pointLight
+          ref={idleGlowRef}
+          position={[0, 0, 0]}
+          color="#ffffff"
+          intensity={2}
+          distance={5}
+          decay={2}
+        />
+      )}
+
+      <mesh
+        ref={meshRef}
+        position={[0, 0, 0]}
+      >
+        {/* Plane shape to display the logo image - 3x bigger */}
+        <planeGeometry args={[6, 6]} />
+        <meshBasicMaterial
+          map={logoTexture}
+          transparent
+          opacity={opacity}
+          side={DoubleSide}
+        />
+      </mesh>
+    </group>
   )
 }
 
