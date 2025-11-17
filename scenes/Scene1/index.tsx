@@ -39,6 +39,11 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
   ])
   const lastThrowTimeRef = useRef(0)
 
+  // Detect mobile device on mount
+  useEffect(() => {
+    setIsMobile(isMobileDevice())
+  }, [])
+
   // Track mouse position (normalized device coordinates)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
@@ -263,6 +268,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           camera={camera}
           mousePos={mousePos}
           spawnTime={disc.spawnTime}
+          isMobile={isMobile}
         />
       ))}
     </>
@@ -426,6 +432,7 @@ function Disc({
   camera,
   mousePos,
   spawnTime,
+  isMobile,
 }: {
   position: Vector3
   rotation: Vector3
@@ -435,6 +442,7 @@ function Disc({
   camera: any
   mousePos: { x: number; y: number }
   spawnTime: number
+  isMobile: boolean
 }) {
   const meshRef = useRef<Mesh>(null)
   const [isHovered, setIsHovered] = useState(false)
@@ -455,7 +463,7 @@ function Disc({
   // Calculate spawn flash intensity
   const [flashIntensity, setFlashIntensity] = useState(0)
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     if (meshRef.current && !isThrown) {
       // Calculate spawn animation progress
       const currentTime = state.clock.elapsedTime
@@ -499,7 +507,11 @@ function Disc({
       meshRef.current.position.y = clampedY + bounceOffset
       meshRef.current.position.z = 1 // Keep logo slightly forward to prevent clipping
 
-      // Scale animation: start small, grow to normal size
+      // Determine final scale based on device
+      // Desktop: 30% smaller (0.7), Mobile: 50% smaller (0.5)
+      const finalScale = isMobile ? 0.5 : 0.7
+
+      // Scale animation: start small, grow to device-specific size
       const scaleProgress = Math.min(spawnProgress * 1.5, 1)
       const baseScale = 0.3 + scaleProgress * 0.7
 
@@ -549,28 +561,13 @@ function Disc({
         onPointerDown={(e) => {
           e.stopPropagation()
           if (!isThrown) {
-            setIsTouching(true)
+            // Trigger click feedback on mobile
+            if (isMobile) {
+              setClickFeedback(1)
+            }
             // Trigger click immediately on pointer down for better mobile responsiveness
             onClick()
           }
-        }}
-        onPointerUp={(e) => {
-          e.stopPropagation()
-          setIsTouching(false)
-        }}
-        onPointerEnter={(e) => {
-          if (!isThrown) {
-            setIsHovered(true)
-            // Change cursor to pointer on hover (desktop)
-            if (e.pointerType === 'mouse') {
-              document.body.style.cursor = 'pointer'
-            }
-          }
-        }}
-        onPointerLeave={(e) => {
-          setIsHovered(false)
-          setIsTouching(false)
-          document.body.style.cursor = 'default'
         }}
       >
         {/* Plane shape to display the logo image - larger size for better visibility */}

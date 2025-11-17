@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { SceneManager } from '@/components/SceneManager'
 import { registerAllScenes } from '@/lib/registerScenes'
+import Navigation from '@/components/Navigation'
 
 export default function Home() {
   const [currentSceneId, setCurrentSceneId] = useState<string>('frisbee-disc-throw')

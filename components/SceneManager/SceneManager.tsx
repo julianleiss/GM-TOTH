@@ -138,7 +138,7 @@ export default function SceneManager({
               alpha: true, // Enable transparency to show background GIF
             }}
             className="w-full h-full"
-            style={{ touchAction: 'none' }}
+            style={{ touchAction: 'none', background: 'transparent' }}
           >
             <SceneComponent
               isActive={true}
