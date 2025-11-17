@@ -96,6 +96,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           rotationVelocity: disc.rotationVelocity,
           opacity: newOpacity,
           active: stillActive,
+          spawnTime: disc.spawnTime,
         }
       })
     )
