@@ -3,7 +3,7 @@
 import { useRef, useState, useMemo, useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Mesh, Vector3, AdditiveBlending, Points, BufferAttribute, CanvasTexture, PlaneGeometry, MeshBasicMaterial, DoubleSide } from 'three'
-import { OrbitControls, useTexture } from '@react-three/drei'
+import { useTexture } from '@react-three/drei'
 import { Scene, SceneProps } from '@/lib/types'
 import { Fire } from '@wolffo/three-fire/react'
 
@@ -162,17 +162,6 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
 
   return (
     <>
-      {/* Camera controls */}
-      <OrbitControls
-        enableZoom={true}
-        enablePan={false}
-        enableRotate={true}
-        maxDistance={20}
-        minDistance={3}
-        maxPolarAngle={Math.PI / 1.5}
-        minPolarAngle={Math.PI / 6}
-      />
-
       {/* Black ground plane */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -3, 0]} receiveShadow>
         <planeGeometry args={[100, 100]} />
@@ -428,13 +417,20 @@ function Disc({
 
   useFrame(() => {
     if (meshRef.current && !isThrown) {
-      // Keep logo centered at origin
-      meshRef.current.position.x = position.x
-      meshRef.current.position.y = position.y
-      meshRef.current.position.z = position.z
+      // Make logo slightly follow mouse cursor to indicate throw angle
+      const followAmount = 0.3 // How much to follow the cursor (0 = none, 1 = full)
+      const targetX = position.x + mousePos.x * followAmount
+      const targetY = position.y + mousePos.y * followAmount
+
+      meshRef.current.position.x = targetX
+      meshRef.current.position.y = targetY
 
       // Make disc face camera when not thrown
       meshRef.current.lookAt(camera.position)
+
+      // Add slight tilt based on mouse position for visual feedback
+      meshRef.current.rotation.z = -mousePos.x * 0.2
+      meshRef.current.rotation.x += mousePos.y * 0.1
     } else if (meshRef.current && isThrown) {
       // Apply rotation when thrown
       meshRef.current.rotation.x = rotation.x
@@ -455,13 +451,14 @@ function Disc({
         e.stopPropagation()
       }}
     >
-      {/* Plane shape to display the logo image */}
-      <planeGeometry args={[2, 2]} />
+      {/* Plane shape to display the logo image - larger size for better visibility */}
+      <planeGeometry args={[3, 3]} />
       <meshBasicMaterial
         map={logoTexture}
         transparent
         opacity={opacity}
         side={DoubleSide}
+        toneMapped={false}
       />
     </mesh>
   )
