@@ -39,7 +39,7 @@ export default function Navigation() {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-black hover:bg-[#ff0000] transition-colors duration-300">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-black">
       <div className="w-full px-4 md:px-8 py-4">
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center justify-between">
@@ -47,21 +47,21 @@ export default function Navigation() {
           <div className="flex items-center gap-4">
             <a
               href="#tour"
-              className="text-white font-bold hover:opacity-70 transition-opacity"
+              className="text-white font-bold hover:text-[#ff0000] transition-colors"
               style={{ fontSize: '14px', fontFamily: 'Lato Black, Arial, sans-serif' }}
             >
               TOUR
             </a>
             <a
               href="#newsletter"
-              className="text-white font-bold hover:opacity-70 transition-opacity"
+              className="text-white font-bold hover:text-[#ff0000] transition-colors"
               style={{ fontSize: '14px', fontFamily: 'Lato Black, Arial, sans-serif' }}
             >
               NEWSLETTER
             </a>
             <a
               href="#store"
-              className="text-white font-bold hover:opacity-70 transition-opacity"
+              className="text-white font-bold hover:text-[#ff0000] transition-colors"
               style={{ fontSize: '14px', fontFamily: 'Lato Black, Arial, sans-serif' }}
             >
               STORE
@@ -82,7 +82,7 @@ export default function Navigation() {
               href="https://open.spotify.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-white hover:opacity-70 transition-opacity"
+              className="text-white hover:text-[#ff0000] transition-colors"
               aria-label="Spotify"
             >
               <SpotifyIcon />
@@ -91,7 +91,7 @@ export default function Navigation() {
               href="https://instagram.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-white hover:opacity-70 transition-opacity"
+              className="text-white hover:text-[#ff0000] transition-colors"
               aria-label="Instagram"
             >
               <InstagramIcon />
@@ -100,7 +100,7 @@ export default function Navigation() {
               href="https://youtube.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-white hover:opacity-70 transition-opacity"
+              className="text-white hover:text-[#ff0000] transition-colors"
               aria-label="YouTube"
             >
               <YouTubeIcon />
@@ -109,7 +109,7 @@ export default function Navigation() {
               href="https://tiktok.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-white hover:opacity-70 transition-opacity"
+              className="text-white hover:text-[#ff0000] transition-colors"
               aria-label="TikTok"
             >
               <TikTokIcon />
@@ -118,7 +118,7 @@ export default function Navigation() {
               href="https://x.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-white hover:opacity-70 transition-opacity"
+              className="text-white hover:text-[#ff0000] transition-colors"
               aria-label="X"
             >
               <XIcon />
@@ -157,7 +157,7 @@ export default function Navigation() {
               {/* Navigation Links */}
               <a
                 href="#tour"
-                className="text-white font-bold hover:opacity-70 transition-opacity"
+                className="text-white font-bold hover:text-[#ff0000] transition-colors"
                 style={{ fontSize: '14px', fontFamily: 'Lato Black, Arial, sans-serif' }}
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -165,7 +165,7 @@ export default function Navigation() {
               </a>
               <a
                 href="#newsletter"
-                className="text-white font-bold hover:opacity-70 transition-opacity"
+                className="text-white font-bold hover:text-[#ff0000] transition-colors"
                 style={{ fontSize: '14px', fontFamily: 'Lato Black, Arial, sans-serif' }}
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -173,7 +173,7 @@ export default function Navigation() {
               </a>
               <a
                 href="#store"
-                className="text-white font-bold hover:opacity-70 transition-opacity"
+                className="text-white font-bold hover:text-[#ff0000] transition-colors"
                 style={{ fontSize: '14px', fontFamily: 'Lato Black, Arial, sans-serif' }}
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -186,7 +186,7 @@ export default function Navigation() {
                   href="https://open.spotify.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white hover:opacity-70 transition-opacity"
+                  className="text-white hover:text-[#ff0000] transition-colors"
                   aria-label="Spotify"
                 >
                   <SpotifyIcon />
@@ -195,7 +195,7 @@ export default function Navigation() {
                   href="https://instagram.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white hover:opacity-70 transition-opacity"
+                  className="text-white hover:text-[#ff0000] transition-colors"
                   aria-label="Instagram"
                 >
                   <InstagramIcon />
@@ -204,7 +204,7 @@ export default function Navigation() {
                   href="https://youtube.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white hover:opacity-70 transition-opacity"
+                  className="text-white hover:text-[#ff0000] transition-colors"
                   aria-label="YouTube"
                 >
                   <YouTubeIcon />
@@ -213,7 +213,7 @@ export default function Navigation() {
                   href="https://tiktok.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white hover:opacity-70 transition-opacity"
+                  className="text-white hover:text-[#ff0000] transition-colors"
                   aria-label="TikTok"
                 >
                   <TikTokIcon />
@@ -222,7 +222,7 @@ export default function Navigation() {
                   href="https://x.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white hover:opacity-70 transition-opacity"
+                  className="text-white hover:text-[#ff0000] transition-colors"
                   aria-label="X"
                 >
                   <XIcon />
