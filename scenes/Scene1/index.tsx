@@ -20,12 +20,7 @@ interface DiscState {
   rotationVelocity: Vector3
   opacity: number
   active: boolean
-  spawning: boolean
-  spawnTime: number
-  scale: number
-  hitFire: boolean
-  hitFireTime: number
-  spawnVelocity?: Vector3  // For realistic spawn physics
+  spawnTime: number // Time when disc was spawned
 }
 
 function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
@@ -40,12 +35,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       opacity: 1,
       active: false,
       spawnTime: 0,
-      scale: 1,
-      hitFire: false,
-      hitFireTime: 0,
-      spawnVelocity: new Vector3(0, 0, 0),
     },
   ])
+  const lastThrowTimeRef = useRef(0)
 
   // Track mouse position (normalized device coordinates)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
@@ -68,64 +60,6 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
     // Update discs physics
     setDiscs((prevDiscs) =>
       prevDiscs.map((disc) => {
-        // Handle spawning animation with realistic bounce physics
-        if (disc.spawning) {
-          const spawnDuration = 1.2 // 1.2s spawn animation for realistic bouncing
-          const spawnProgress = (currentTime - disc.spawnTime) / spawnDuration
-
-          if (spawnProgress >= 1) {
-            // Spawn animation complete
-            return {
-              ...disc,
-              spawning: false,
-              scale: 1,
-              opacity: 1,
-              spawnVelocity: new Vector3(0, 0, 0),
-            }
-          }
-
-          // Initialize spawn velocity if not set
-          if (!disc.spawnVelocity) {
-            disc.spawnVelocity = new Vector3(0, 6, 0) // Initial upward velocity
-          }
-
-          // Realistic bounce physics
-          const gravity = 20 // Gravity acceleration
-          const groundY = 2 // Ground level for logo
-          const bounceDamping = 0.6 // Energy loss on bounce (60% energy retained)
-          const minBounceVelocity = 0.3 // Stop bouncing when velocity is too low
-
-          // Update velocity with gravity
-          let newSpawnVelocity = disc.spawnVelocity.clone()
-          newSpawnVelocity.y -= gravity * delta
-
-          // Update position
-          let newY = disc.position.y + newSpawnVelocity.y * delta
-
-          // Ground collision detection and bounce
-          if (newY <= groundY && newSpawnVelocity.y < 0) {
-            newY = groundY
-            newSpawnVelocity.y = -newSpawnVelocity.y * bounceDamping // Reverse and dampen
-
-            // Stop bouncing if velocity too low
-            if (Math.abs(newSpawnVelocity.y) < minBounceVelocity) {
-              newSpawnVelocity.y = 0
-              newY = groundY
-            }
-          }
-
-          // Scale animation - quick scale up
-          const scaleAnim = Math.min(1, spawnProgress * 3)
-
-          return {
-            ...disc,
-            position: new Vector3(0, newY, 0),
-            scale: scaleAnim,
-            opacity: scaleAnim,
-            spawnVelocity: newSpawnVelocity,
-          }
-        }
-
         if (!disc.active) return disc
 
         // Update position with velocity
@@ -138,25 +72,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           disc.rotationVelocity.clone().multiplyScalar(delta)
         )
 
-        // Apply gravity and air resistance for realistic physics
+        // Apply gravity
         const newVelocity = disc.velocity.clone()
-        newVelocity.y -= 9.8 * delta // More realistic gravity (9.8 m/s²)
-
-        // Air resistance (drag) - slows down the disc over time
-        const airResistance = 0.98 // Drag coefficient (2% velocity loss per frame)
-        newVelocity.multiplyScalar(Math.pow(airResistance, delta * 60)) // Frame-rate independent
-
-        // Check collision with fire (fire is at [0, -1, -8])
-        const fireCenter = new Vector3(0, 0, -8)
-        const distanceToFire = newPosition.distanceTo(fireCenter)
-        let hitFire = disc.hitFire
-        let hitFireTime = disc.hitFireTime
-
-        // Fire collision zone: radius ~14 units
-        if (!hitFire && distanceToFire < 14 && newPosition.z < -4) {
-          hitFire = true
-          hitFireTime = currentTime
-        }
+        newVelocity.y -= 3 * delta // gravity
 
         // Fade out based on distance
         const distance = newPosition.length()
@@ -186,33 +104,41 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
 
     // Clean up old inactive discs (keep only active ones and one inactive at center)
     setDiscs((prevDiscs) => {
-      const activeDiscs = prevDiscs.filter((disc) => disc.active || disc.spawning)
-      const centerPosition = new Vector3(0, 2, 0)
-      const hasReadyDisc = prevDiscs.some(
-        (disc) => !disc.active && !disc.spawning && disc.position.distanceTo(centerPosition) < 0.1
-      )
+      const activeDiscs = prevDiscs.filter((disc) => disc.active)
+      const inactiveDiscs = prevDiscs.filter((disc) => !disc.active)
 
-      // Check if enough time has passed since last throw (1.5 second delay)
-      const canSpawn = (currentTime - lastThrowTime) >= 1.5
+      // Find the inactive disc at center (position near 0,0,0)
+      const centerDisc = inactiveDiscs.find(d => d.position.length() < 0.5)
 
-      if (!hasReadyDisc && canSpawn && activeDiscs.length < 10) { // Limit to 10 logos max
-        return [
-          ...activeDiscs,
-          {
-            position: new Vector3(0, 0, 0),
-            velocity: new Vector3(0, 0, 0),
-            rotation: new Vector3(0, 0, 0),
-            rotationVelocity: new Vector3(0, 0, 0),
-            opacity: 1,
-            active: false,
-            spawning: true,
-            spawnTime: currentTime,
-            scale: 0.1,
-            hitFire: false,
-            hitFireTime: 0,
-            spawnVelocity: new Vector3(0, 6, 0), // Initial upward velocity for bounce
-          },
-        ]
+      // Always keep active discs and the center disc
+      if (centerDisc) {
+        return [...activeDiscs, centerDisc]
+      } else if (inactiveDiscs.length > 0) {
+        // If no center disc, keep the first inactive one
+        return [...activeDiscs, inactiveDiscs[0]]
+      } else {
+        // Check if enough time has passed since last throw (1.5 second delay)
+        const currentTime = state.clock.elapsedTime
+        const canSpawn = lastThrowTimeRef.current === 0 || (currentTime - lastThrowTimeRef.current) >= 1.5
+
+        // If no inactive discs at all and enough time has passed, create one with spawn animation
+        if (canSpawn) {
+          return [
+            ...activeDiscs,
+            {
+              position: new Vector3(0, 0, 0),
+              velocity: new Vector3(0, 0, 0),
+              rotation: new Vector3(0, 0, 0),
+              rotationVelocity: new Vector3(0, 0, 0),
+              opacity: 1,
+              active: false,
+              spawnTime: currentTime,
+            },
+          ]
+        }
+
+        // If not enough time has passed, just return active discs
+        return activeDiscs
       }
     })
   })
@@ -251,9 +177,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       Math.random() * 2 - 1  // minimal spin on z
     )
 
-    // Throw the disc and immediately spawn a new one
-    setDiscs((prevDiscs) => {
-      const updated = prevDiscs.map((d, i) =>
+    // Throw the disc
+    setDiscs((prevDiscs) =>
+      prevDiscs.map((d, i) =>
         i === discIndex
           ? {
               ...d,
@@ -263,24 +189,10 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
             }
           : d
       )
-      // Only add a new inactive disc if there isn't one already
-      const hasInactive = updated.some(d => !d.active)
-      if (!hasInactive) {
-        return [
-          ...updated,
-          {
-            position: new Vector3(0, 0, 0),
-            velocity: new Vector3(0, 0, 0),
-            rotation: new Vector3(0, 0, 0),
-            rotationVelocity: new Vector3(0, 0, 0),
-            opacity: 1,
-            active: false,
-            spawnTime: currentTimeRef.current, // Use same clock as state.clock
-          },
-        ]
-      }
-      return updated
-    })
+    )
+
+    // Update last throw time to trigger 1.5 second delay before next spawn
+    lastThrowTimeRef.current = currentTimeRef.current
   }
 
   return (
