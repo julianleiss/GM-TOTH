@@ -428,20 +428,13 @@ function Disc({
 
   useFrame(() => {
     if (meshRef.current && !isThrown) {
-      // Make logo slightly follow mouse cursor to indicate throw angle
-      const followAmount = 0.3 // How much to follow the cursor (0 = none, 1 = full)
-      const targetX = position.x + mousePos.x * followAmount
-      const targetY = position.y + mousePos.y * followAmount
-
-      meshRef.current.position.x = targetX
-      meshRef.current.position.y = targetY
+      // Keep logo centered at origin
+      meshRef.current.position.x = position.x
+      meshRef.current.position.y = position.y
+      meshRef.current.position.z = position.z
 
       // Make disc face camera when not thrown
       meshRef.current.lookAt(camera.position)
-
-      // Add slight tilt based on mouse position for visual feedback
-      meshRef.current.rotation.z = -mousePos.x * 0.2
-      meshRef.current.rotation.x += mousePos.y * 0.1
     } else if (meshRef.current && isThrown) {
       // Apply rotation when thrown
       meshRef.current.rotation.x = rotation.x
