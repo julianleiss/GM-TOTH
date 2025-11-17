@@ -2,7 +2,7 @@
 
 import { useRef, useState, useMemo } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { Mesh, Vector3 } from 'three'
+import { Mesh, Vector3, Color, AdditiveBlending, Points, BufferGeometry, PointsMaterial, BufferAttribute } from 'three'
 import { OrbitControls } from '@react-three/drei'
 import { Scene, SceneProps } from '@/lib/types'
 
@@ -28,47 +28,10 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
     },
   ])
 
-  // Floating background shapes
-  const backgroundShapes = useMemo(() => {
-    const shapes = []
-    for (let i = 0; i < 12; i++) {
-      const isBox = Math.random() > 0.5
-      shapes.push({
-        id: i,
-        type: isBox ? 'box' : 'octahedron',
-        position: [
-          (Math.random() - 0.5) * 20,
-          (Math.random() - 0.5) * 15,
-          (Math.random() - 0.5) * 10 - 5,
-        ] as [number, number, number],
-        scale: Math.random() * 0.8 + 0.3,
-        rotation: [
-          Math.random() * Math.PI,
-          Math.random() * Math.PI,
-          Math.random() * Math.PI,
-        ] as [number, number, number],
-        floatSpeed: Math.random() * 0.5 + 0.2,
-        floatOffset: Math.random() * Math.PI * 2,
-      })
-    }
-    return shapes
-  }, [])
 
-  const backgroundRefs = useRef<(Mesh | null)[]>([])
-
-  // Animate background shapes
+  // Animate discs physics
   useFrame((state, delta) => {
     if (!isActive) return
-
-    // Animate floating shapes
-    backgroundShapes.forEach((shape, index) => {
-      const mesh = backgroundRefs.current[index]
-      if (mesh) {
-        mesh.position.y += Math.sin(state.clock.elapsedTime * shape.floatSpeed + shape.floatOffset) * delta * 0.3
-        mesh.rotation.x += delta * 0.1
-        mesh.rotation.y += delta * 0.15
-      }
-    })
 
     // Update discs physics
     setDiscs((prevDiscs) =>
@@ -196,31 +159,8 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <directionalLight position={[-5, 3, -5]} intensity={0.3} color="#4080ff" />
       <pointLight position={[0, 5, 0]} intensity={0.5} color="#ffffff" />
 
-      {/* Background floating shapes */}
-      {backgroundShapes.map((shape, index) => (
-        <mesh
-          key={shape.id}
-          ref={(el) => {
-            backgroundRefs.current[index] = el
-          }}
-          position={shape.position}
-          rotation={shape.rotation}
-          scale={shape.scale}
-        >
-          {shape.type === 'box' ? (
-            <boxGeometry args={[1, 1, 1]} />
-          ) : (
-            <octahedronGeometry args={[1, 0]} />
-          )}
-          <meshStandardMaterial
-            color="#4080ff"
-            roughness={0.4}
-            metalness={0.2}
-            transparent
-            opacity={0.6}
-          />
-        </mesh>
-      ))}
+      {/* Fire effect */}
+      <Fire isActive={isActive} />
 
       {/* Frisbee discs */}
       {discs.map((disc, index) => (
@@ -235,6 +175,193 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         />
       ))}
     </>
+  )
+}
+
+// Fire component - Realistic fire effect using particles
+function Fire({ isActive }: { isActive?: boolean }) {
+  const particlesRef = useRef<Points>(null)
+  const particlesRef2 = useRef<Points>(null)
+  const particlesRef3 = useRef<Points>(null)
+
+  // Create particle systems with different characteristics
+  const { positions, velocities, lifetimes, sizes, colors } = useMemo(() => {
+    const particleCount = 1500
+    const positions = new Float32Array(particleCount * 3)
+    const velocities = new Float32Array(particleCount * 3)
+    const lifetimes = new Float32Array(particleCount)
+    const sizes = new Float32Array(particleCount)
+    const colors = new Float32Array(particleCount * 3)
+
+    for (let i = 0; i < particleCount; i++) {
+      // Start particles at base of fire with some spread
+      const angle = Math.random() * Math.PI * 2
+      const radius = Math.random() * 1.5
+
+      positions[i * 3] = Math.cos(angle) * radius
+      positions[i * 3 + 1] = Math.random() * -2 // Start below center
+      positions[i * 3 + 2] = Math.sin(angle) * radius
+
+      // Upward velocity with some turbulence
+      velocities[i * 3] = (Math.random() - 0.5) * 1.5
+      velocities[i * 3 + 1] = Math.random() * 3 + 2 // Strong upward
+      velocities[i * 3 + 2] = (Math.random() - 0.5) * 1.5
+
+      lifetimes[i] = Math.random()
+      sizes[i] = Math.random() * 0.8 + 0.2
+
+      // Color variation - red to orange to yellow
+      const colorMix = Math.random()
+      if (colorMix < 0.3) {
+        // Deep red/orange
+        colors[i * 3] = 1.0
+        colors[i * 3 + 1] = 0.2 + Math.random() * 0.3
+        colors[i * 3 + 2] = 0.0
+      } else if (colorMix < 0.7) {
+        // Orange
+        colors[i * 3] = 1.0
+        colors[i * 3 + 1] = 0.4 + Math.random() * 0.4
+        colors[i * 3 + 2] = 0.0
+      } else {
+        // Yellow
+        colors[i * 3] = 1.0
+        colors[i * 3 + 1] = 0.8 + Math.random() * 0.2
+        colors[i * 3 + 2] = 0.1 + Math.random() * 0.2
+      }
+    }
+
+    return { positions, velocities, lifetimes, sizes, colors }
+  }, [])
+
+  // Animate particles
+  useFrame((state, delta) => {
+    if (!isActive) return
+
+    const animateParticles = (particlesRef: React.RefObject<Points>, speedMult: number = 1) => {
+      if (!particlesRef.current) return
+
+      const positions = particlesRef.current.geometry.attributes.position.array as Float32Array
+      const particleCount = positions.length / 3
+
+      for (let i = 0; i < particleCount; i++) {
+        const i3 = i * 3
+
+        // Update lifetime
+        lifetimes[i] += delta * 0.3 * speedMult
+
+        if (lifetimes[i] > 1.0) {
+          // Reset particle
+          lifetimes[i] = 0
+          const angle = Math.random() * Math.PI * 2
+          const radius = Math.random() * 1.5
+
+          positions[i3] = Math.cos(angle) * radius
+          positions[i3 + 1] = -2
+          positions[i3 + 2] = Math.sin(angle) * radius
+
+          velocities[i3] = (Math.random() - 0.5) * 1.5
+          velocities[i3 + 1] = Math.random() * 3 + 2
+          velocities[i3 + 2] = (Math.random() - 0.5) * 1.5
+        } else {
+          // Update position based on velocity
+          positions[i3] += velocities[i3] * delta * speedMult
+          positions[i3 + 1] += velocities[i3 + 1] * delta * speedMult
+          positions[i3 + 2] += velocities[i3 + 2] * delta * speedMult
+
+          // Add turbulence
+          positions[i3] += Math.sin(state.clock.elapsedTime * 2 + i) * delta * 0.5
+          positions[i3 + 2] += Math.cos(state.clock.elapsedTime * 2 + i) * delta * 0.5
+
+          // Velocity decay and curl
+          velocities[i3] *= 0.99
+          velocities[i3 + 2] *= 0.99
+        }
+      }
+
+      particlesRef.current.geometry.attributes.position.needsUpdate = true
+    }
+
+    animateParticles(particlesRef, 1.0)
+    animateParticles(particlesRef2, 0.8)
+    animateParticles(particlesRef3, 1.2)
+  })
+
+  return (
+    <group position={[0, 0, -2]}>
+      {/* Main fire particles - Orange/Red */}
+      <points ref={particlesRef}>
+        <bufferGeometry>
+          <bufferAttribute
+            attach="attributes-position"
+            count={positions.length / 3}
+            array={positions}
+            itemSize={3}
+          />
+          <bufferAttribute
+            attach="attributes-color"
+            count={colors.length / 3}
+            array={colors}
+            itemSize={3}
+          />
+        </bufferGeometry>
+        <pointsMaterial
+          size={0.4}
+          vertexColors
+          transparent
+          opacity={0.8}
+          blending={AdditiveBlending}
+          depthWrite={false}
+          sizeAttenuation={true}
+        />
+      </points>
+
+      {/* Secondary layer - brighter core */}
+      <points ref={particlesRef2}>
+        <bufferGeometry>
+          <bufferAttribute
+            attach="attributes-position"
+            count={positions.length / 3}
+            array={positions}
+            itemSize={3}
+          />
+        </bufferGeometry>
+        <pointsMaterial
+          size={0.3}
+          color="#ffaa00"
+          transparent
+          opacity={0.6}
+          blending={AdditiveBlending}
+          depthWrite={false}
+          sizeAttenuation={true}
+        />
+      </points>
+
+      {/* Third layer - yellow highlights */}
+      <points ref={particlesRef3}>
+        <bufferGeometry>
+          <bufferAttribute
+            attach="attributes-position"
+            count={positions.length / 3}
+            array={positions}
+            itemSize={3}
+          />
+        </bufferGeometry>
+        <pointsMaterial
+          size={0.2}
+          color="#ffff66"
+          transparent
+          opacity={0.4}
+          blending={AdditiveBlending}
+          depthWrite={false}
+          sizeAttenuation={true}
+        />
+      </points>
+
+      {/* Point lights for fire glow */}
+      <pointLight position={[0, 0, 0]} intensity={3} color="#ff4400" distance={10} />
+      <pointLight position={[0, 1, 0]} intensity={2} color="#ff8800" distance={8} />
+      <pointLight position={[0, -1, 0]} intensity={1.5} color="#ff2200" distance={6} />
+    </group>
   )
 }
 
@@ -298,7 +425,7 @@ export const frisbeeDiscThrowScene: Scene = {
   metadata: {
     id: 'frisbee-disc-throw',
     name: '01',
-    description: 'Click or tap the red disc to throw it through floating blue shapes',
+    description: 'Click or tap the red disc to throw it through the blazing fire',
     tags: ['interactive', 'physics', 'game'],
   },
   component: FrisbeeDiscThrowComponent,
