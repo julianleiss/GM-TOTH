@@ -230,7 +230,7 @@ function Fire({ isActive }: { isActive?: boolean }) {
       velocities[i * 3 + 2] = (Math.random() - 0.5) * 1.0
 
       lifetimes[i] = Math.random()
-      sizes[i] = Math.random() * 1.5 + 0.5
+      sizes[i] = Math.random() * 0.5 + 0.2
     }
 
     return { positions, velocities, lifetimes, sizes }
@@ -294,7 +294,7 @@ function Fire({ isActive }: { isActive?: boolean }) {
           />
         </bufferGeometry>
         <pointsMaterial
-          size={1.5}
+          size={0.5}
           map={fireTexture}
           transparent
           opacity={0.9}
