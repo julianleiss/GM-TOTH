@@ -13,11 +13,11 @@ export default function HomeV2() {
           alt="Background"
           className="hidden md:block w-full h-full object-cover"
         />
-        {/* Mobile Background - object-contain to show full GIF */}
+        {/* Mobile Background - object-cover to fill screen */}
         <img
           src="/images/BG-MOBILE-001.gif"
           alt="Background"
-          className="block md:hidden w-full h-full object-contain"
+          className="block md:hidden w-full h-full object-cover"
         />
       </div>
 
@@ -43,7 +43,8 @@ export default function HomeV2() {
       <style jsx>{`
         .blinking-text {
           animation: blink 1s infinite;
-          font-size: 24px;
+          font-size: 18px;
+          line-height: 1;
         }
 
         @keyframes blink {
@@ -59,6 +60,7 @@ export default function HomeV2() {
         @media (min-width: 640px) {
           .blinking-text {
             font-size: 36px;
+            line-height: 1.2;
           }
         }
 
@@ -66,6 +68,7 @@ export default function HomeV2() {
         @media (min-width: 1024px) {
           .blinking-text {
             font-size: 48px;
+            line-height: 1.2;
           }
         }
       `}</style>

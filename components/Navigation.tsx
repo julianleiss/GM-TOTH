@@ -39,7 +39,7 @@ export default function Navigation() {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-black">
+    <nav className="fixed top-0 left-0 right-0 z-50 md:bg-black">
       <div className="w-full px-4 md:px-8 py-4">
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center justify-between">
