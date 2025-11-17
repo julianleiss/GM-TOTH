@@ -505,8 +505,13 @@ function Disc({
 
       // Scale animation: start small, grow to normal size
       const scaleProgress = Math.min(spawnProgress * 1.5, 1)
-      const scale = 0.3 + scaleProgress * 0.7
-      meshRef.current.scale.set(scale, scale, 1)
+      const baseScale = 0.3 + scaleProgress * 0.7
+
+      // Add interactive scale feedback: slightly larger when touching/hovering
+      const interactiveScale = isTouching ? 1.08 : isHovered ? 1.04 : 1.0
+      const finalScale = baseScale * interactiveScale
+
+      meshRef.current.scale.set(finalScale, finalScale, 1)
 
       // Make disc face camera when not thrown
       meshRef.current.lookAt(camera.position)
@@ -580,8 +585,6 @@ function Disc({
           opacity={opacity}
           side={DoubleSide}
           toneMapped={false}
-          emissive={isTouching || isHovered ? '#ffffff' : '#000000'}
-          emissiveIntensity={isTouching ? 0.3 : isHovered ? 0.15 : 0}
         />
       </mesh>
     </>
