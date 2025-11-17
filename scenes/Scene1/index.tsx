@@ -135,8 +135,8 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
     throwDirection.applyQuaternion(camera.quaternion)
     throwDirection.normalize()
 
-    // Set velocity (speed: 12 units/sec)
-    const throwSpeed = 12
+    // Set velocity (speed: 18 units/sec)
+    const throwSpeed = 18
     const velocity = throwDirection.multiplyScalar(throwSpeed)
 
     // Stone-like throw: minimal rotation (just a slight tumble)
@@ -187,9 +187,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         position={[0, -1, -8]}
         scale={14.0}
         color="#ff3300"
-        magnitude={0.9}
-        lacunarity={1.3}
-        gain={0.52}
+        magnitude={0.5}
+        lacunarity={0.8}
+        gain={0.3}
       />
 
       {/* Mid flame - bright orange */}
@@ -198,9 +198,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         position={[0, -1, -8]}
         scale={14.8}
         color="#ff6600"
-        magnitude={0.8}
-        lacunarity={1.2}
-        gain={0.56}
+        magnitude={0.45}
+        lacunarity={0.75}
+        gain={0.32}
       />
 
       {/* Outer flame - yellow tips (skip on mobile for performance) */}
@@ -210,9 +210,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           position={[0, -1, -8]}
           scale={15.4}
           color="#ffaa00"
-          magnitude={0.7}
-          lacunarity={1.15}
-          gain={0.6}
+          magnitude={0.4}
+          lacunarity={0.7}
+          gain={0.35}
         />
       )}
 
@@ -452,7 +452,7 @@ function Disc({
       }}
     >
       {/* Plane shape to display the logo image - larger size for better visibility */}
-      <planeGeometry args={[3, 3]} />
+      <planeGeometry args={[4.5, 4.5]} />
       <meshBasicMaterial
         map={logoTexture}
         transparent
