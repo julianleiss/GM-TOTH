@@ -192,13 +192,15 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
 
   return (
     <>
-      {/* Black ground plane */}
+      {/* Ground plane - transparent to show background GIF */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -3, 0]} receiveShadow>
         <planeGeometry args={[100, 100]} />
         <meshStandardMaterial
           color="#000000"
           roughness={0.9}
           metalness={0.1}
+          transparent
+          opacity={0}
         />
       </mesh>
 
