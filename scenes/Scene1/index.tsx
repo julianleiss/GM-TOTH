@@ -189,7 +189,7 @@ function Fire({ isActive }: { isActive?: boolean }) {
 
   // Create particle systems with different characteristics
   const { positions, velocities, lifetimes, sizes, colors } = useMemo(() => {
-    const particleCount = 1500
+    const particleCount = 3000
     const positions = new Float32Array(particleCount * 3)
     const velocities = new Float32Array(particleCount * 3)
     const lifetimes = new Float32Array(particleCount)
@@ -211,7 +211,7 @@ function Fire({ isActive }: { isActive?: boolean }) {
       velocities[i * 3 + 2] = (Math.random() - 0.5) * 1.5
 
       lifetimes[i] = Math.random()
-      sizes[i] = Math.random() * 0.8 + 0.2
+      sizes[i] = Math.random() * 1.4 + 0.1
 
       // Color variation - red to orange to yellow
       const colorMix = Math.random()
@@ -308,7 +308,7 @@ function Fire({ isActive }: { isActive?: boolean }) {
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.4}
+          size={0.5}
           vertexColors
           transparent
           opacity={0.8}
@@ -329,7 +329,7 @@ function Fire({ isActive }: { isActive?: boolean }) {
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.3}
+          size={0.35}
           color="#ffaa00"
           transparent
           opacity={0.6}
@@ -350,7 +350,7 @@ function Fire({ isActive }: { isActive?: boolean }) {
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.2}
+          size={0.15}
           color="#ffff66"
           transparent
           opacity={0.4}
@@ -413,7 +413,7 @@ function SmokeParticles({ isActive }: { isActive?: boolean }) {
 
   // Particle data
   const particleData = useMemo(() => {
-    const count = 50 // Fewer but larger smoke sprites
+    const count = 100 // Fewer but larger smoke sprites
     const particles: {
       sprite: Sprite
       velocity: Vector3
@@ -445,7 +445,7 @@ function SmokeParticles({ isActive }: { isActive?: boolean }) {
         Math.sin(angle) * radius
       )
 
-      const initialSize = 1.5 + Math.random() * 1.5
+      const initialSize = 0.5 + Math.random() * 3.5
       sprite.scale.set(initialSize, initialSize, 1)
 
       particles.push({
