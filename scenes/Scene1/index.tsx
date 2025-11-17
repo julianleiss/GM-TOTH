@@ -128,11 +128,11 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
     const disc = discs[discIndex]
     if (disc.active) return // Already thrown
 
-    // Calculate throw direction based on mouse position
-    // Use mouse position to determine horizontal and vertical direction
+    // Calculate throw direction based on mouse position (bow and arrow mechanic)
+    // Mouse down-right = logo flies up-left (opposite direction)
     const throwDirection = new Vector3(
-      mousePos.x * 1.5, // Horizontal based on mouse X
-      mousePos.y * 1.5 + 0.3, // Vertical based on mouse Y, plus base upward angle
+      -mousePos.x * 1.5, // Inverted: mouse right = throw left
+      -mousePos.y * 1.5 + 0.3, // Inverted: mouse down = throw up, plus base upward angle
       -1 // Always throw forward
     )
     throwDirection.applyQuaternion(camera.quaternion)
@@ -494,6 +494,8 @@ export const frisbeeDiscThrowScene: Scene = {
     camera: {
       position: [0, 2, 8],
       fov: 90,
+      near: 0.01, // Very small near plane to prevent clipping
+      far: 1000,
     },
     lighting: 'studio',
     performance: {
