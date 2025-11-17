@@ -84,6 +84,17 @@ body {
   }
 }
 
+@keyframes slide-in-from-top {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 .animate-in {
   animation: fade-in 300ms ease-out;
 }
@@ -98,6 +109,10 @@ body {
 
 .fade-in {
   animation: fade-in 300ms ease-out;
+}
+
+.slide-in-from-top {
+  animation: slide-in-from-top 300ms ease-out;
 }
 
 /* Prevent text selection on interactive elements */

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { SceneManager } from '@/components/SceneManager'
 import { registerAllScenes } from '@/lib/registerScenes'
+import Navigation from '@/components/Navigation'
 
 export default function Home() {
   const [currentSceneId, setCurrentSceneId] = useState<string>('frisbee-disc-throw')
@@ -25,6 +26,9 @@ export default function Home() {
 
   return (
     <main className="w-screen h-screen bg-black overflow-hidden relative">
+      {/* Navigation */}
+      <Navigation />
+
       {/* Background GIFs - Full Viewport */}
       <div className="fixed inset-0 w-full h-full z-0">
         {/* Desktop & Tablet Background */}
