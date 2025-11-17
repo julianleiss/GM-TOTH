@@ -1,11 +1,17 @@
 'use client'
 
-import { useRef, useState, useMemo } from 'react'
+import { useRef, useState, useMemo, useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Mesh, Vector3, AdditiveBlending, Points, BufferAttribute, CanvasTexture, PlaneGeometry, MeshBasicMaterial, DoubleSide } from 'three'
 import { OrbitControls, useTexture } from '@react-three/drei'
 import { Scene, SceneProps } from '@/lib/types'
 import { Fire } from '@wolffo/three-fire/react'
+
+// Mobile detection utility
+const isMobileDevice = () => {
+  if (typeof window === 'undefined') return false
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768
+}
 
 interface DiscState {
   position: Vector3
@@ -17,7 +23,8 @@ interface DiscState {
 }
 
 function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
-  const { camera, size } = useThree()
+  const { camera, size, gl } = useThree()
+  const [isMobile, setIsMobile] = useState(false)
   const [discs, setDiscs] = useState<DiscState[]>([
     {
       position: new Vector3(0, 0, 0),
@@ -28,6 +35,16 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       active: false,
     },
   ])
+
+  // Detect mobile and optimize renderer
+  useEffect(() => {
+    setIsMobile(isMobileDevice())
+
+    // Mobile optimizations
+    if (isMobileDevice()) {
+      gl.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)) // Limit pixel ratio for performance
+    }
+  }, [gl])
 
 
   // Animate discs physics
@@ -168,48 +185,23 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <ambientLight intensity={0.05} />
       <directionalLight position={[5, 8, 5]} intensity={0.1} />
 
-      {/* Fire glow lights - positioned at fire location */}
-      <pointLight position={[0, 0, -8]} intensity={8} color="#ff3300" distance={25} decay={2} />
-      <pointLight position={[0, 2, -8]} intensity={6} color="#ff6600" distance={22} decay={2} />
-      <pointLight position={[0, -1, -8]} intensity={5} color="#cc1100" distance={18} decay={2} />
-      <pointLight position={[0, 4, -8]} intensity={4} color="#ffaa00" distance={20} decay={2} />
-      <pointLight position={[0, 1, -8]} intensity={3} color="#ff8800" distance={18} decay={2} />
+      {/* Fire glow lights - optimized for mobile */}
+      <pointLight position={[0, 0, -8]} intensity={6} color="#ff4400" distance={20} decay={2} />
+      <pointLight position={[0, 2, -8]} intensity={4} color="#ff8800" distance={18} decay={2} />
 
-      {/* Fire in the distance - multiple small flames */}
-      {/* Core flames layer 1 - deep red */}
+      {/* Fire in the distance - adaptive rendering based on device */}
+      {/* Core flame - deep red/orange */}
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -8]}
         scale={14.0}
-        color="#cc1100"
-        magnitude={0.95}
-        lacunarity={1.4}
-        gain={0.5}
-      />
-
-      {/* Core flames layer 2 - red */}
-      <Fire
-        texture="/images/fire.png"
-        position={[0, -1, -8]}
-        scale={14.0}
-        color="#ff2200"
+        color="#ff3300"
         magnitude={0.9}
         lacunarity={1.3}
         gain={0.52}
       />
 
-      {/* Mid flames layer 1 - orange-red */}
-      <Fire
-        texture="/images/fire.png"
-        position={[0, -1, -8]}
-        scale={14.4}
-        color="#ff4400"
-        magnitude={0.85}
-        lacunarity={1.3}
-        gain={0.54}
-      />
-
-      {/* Mid flames layer 2 - orange */}
+      {/* Mid flame - bright orange */}
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -8]}
@@ -220,44 +212,21 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         gain={0.56}
       />
 
-      {/* Outer flames layer 1 - bright orange */}
-      <Fire
-        texture="/images/fire.png"
-        position={[0, -1, -8]}
-        scale={15.2}
-        color="#ff8800"
-        magnitude={0.75}
-        lacunarity={1.2}
-        gain={0.58}
-      />
+      {/* Outer flame - yellow tips (skip on mobile for performance) */}
+      {!isMobile && (
+        <Fire
+          texture="/images/fire.png"
+          position={[0, -1, -8]}
+          scale={15.4}
+          color="#ffaa00"
+          magnitude={0.7}
+          lacunarity={1.15}
+          gain={0.6}
+        />
+      )}
 
-      {/* Outer flames layer 2 - yellow-orange */}
-      <Fire
-        texture="/images/fire.png"
-        position={[0, -1, -8]}
-        scale={15.6}
-        color="#ffaa00"
-        magnitude={0.7}
-        lacunarity={1.1}
-        gain={0.6}
-      />
-
-      {/* Yellow tips */}
-      <Fire
-        texture="/images/fire.png"
-        position={[0, -1, -8]}
-        scale={16.0}
-        color="#ffcc00"
-        magnitude={0.65}
-        lacunarity={1.1}
-        gain={0.62}
-      />
-
-      {/* Realistic smoke particle system */}
-      <SmokeParticles isActive={isActive} />
-
-      {/* Smoke effect */}
-      <SmokeParticles isActive={isActive} />
+      {/* Smoke effect - single optimized instance */}
+      <SmokeParticles isActive={isActive} isMobile={isMobile} />
 
       {/* Frisbee discs */}
       {discs.map((disc, index) => (
@@ -272,140 +241,6 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         />
       ))}
     </>
-  )
-}
-
-// Generate procedural fire texture
-function generateFireTexture(): CanvasTexture {
-  const canvas = document.createElement('canvas')
-  canvas.width = 128
-  canvas.height = 128
-
-  const ctx = canvas.getContext('2d')!
-  const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64)
-
-  // Fire gradient: white core -> yellow -> orange -> red -> transparent
-  gradient.addColorStop(0, 'rgba(255, 255, 255, 1)')
-  gradient.addColorStop(0.2, 'rgba(255, 255, 100, 1)')
-  gradient.addColorStop(0.4, 'rgba(255, 160, 0, 1)')
-  gradient.addColorStop(0.6, 'rgba(255, 80, 0, 0.8)')
-  gradient.addColorStop(0.8, 'rgba(200, 40, 0, 0.4)')
-  gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
-
-  ctx.fillStyle = gradient
-  ctx.fillRect(0, 0, 128, 128)
-
-  const texture = new CanvasTexture(canvas)
-  return texture
-}
-
-// FireParticles component - Textured particle system
-function FireParticles({ isActive }: { isActive?: boolean }) {
-  const particlesRef = useRef<Points>(null)
-  const fireTexture = useMemo(() => generateFireTexture(), [])
-
-  const { positions, velocities, lifetimes, sizes } = useMemo(() => {
-    const particleCount = 500
-    const positions = new Float32Array(particleCount * 3)
-    const velocities = new Float32Array(particleCount * 3)
-    const lifetimes = new Float32Array(particleCount)
-    const sizes = new Float32Array(particleCount)
-
-    for (let i = 0; i < particleCount; i++) {
-      const angle = Math.random() * Math.PI * 2
-      const radius = Math.random() * 1.2
-
-      positions[i * 3] = Math.cos(angle) * radius
-      positions[i * 3 + 1] = Math.random() * -1.5
-      positions[i * 3 + 2] = Math.sin(angle) * radius
-
-      velocities[i * 3] = (Math.random() - 0.5) * 1.0
-      velocities[i * 3 + 1] = Math.random() * 2 + 1.5
-      velocities[i * 3 + 2] = (Math.random() - 0.5) * 1.0
-
-      lifetimes[i] = Math.random()
-      sizes[i] = Math.random() * 0.5 + 0.2
-    }
-
-    return { positions, velocities, lifetimes, sizes }
-  }, [])
-
-  useFrame((state, delta) => {
-    if (!isActive || !particlesRef.current) return
-
-    const posArray = particlesRef.current.geometry.attributes.position.array as Float32Array
-    const particleCount = posArray.length / 3
-
-    for (let i = 0; i < particleCount; i++) {
-      const i3 = i * 3
-
-      // Update lifetime
-      lifetimes[i] += delta * 0.2
-
-      if (lifetimes[i] > 1.0) {
-        // Reset particle at fire base
-        lifetimes[i] = 0
-        const angle = Math.random() * Math.PI * 2
-        const radius = Math.random() * 1.2
-
-        posArray[i3] = Math.cos(angle) * radius
-        posArray[i3 + 1] = -1.5
-        posArray[i3 + 2] = Math.sin(angle) * radius
-
-        velocities[i3] = (Math.random() - 0.5) * 1.0
-        velocities[i3 + 1] = Math.random() * 2 + 1.5
-        velocities[i3 + 2] = (Math.random() - 0.5) * 1.0
-      } else {
-        // Move particle
-        posArray[i3] += velocities[i3] * delta
-        posArray[i3 + 1] += velocities[i3 + 1] * delta
-        posArray[i3 + 2] += velocities[i3 + 2] * delta
-
-        // Turbulence
-        posArray[i3] += Math.sin(state.clock.elapsedTime * 2 + i * 0.1) * delta * 0.4
-        posArray[i3 + 2] += Math.cos(state.clock.elapsedTime * 2 + i * 0.1) * delta * 0.4
-
-        velocities[i3] *= 0.98
-        velocities[i3 + 2] *= 0.98
-      }
-    }
-
-    particlesRef.current.geometry.attributes.position.needsUpdate = true
-  })
-
-  return (
-    <group position={[0, 0, -2]}>
-      <points ref={particlesRef}>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            count={positions.length / 3}
-            array={positions}
-            itemSize={3}
-          />
-          <bufferAttribute
-            attach="attributes-size"
-            count={sizes.length}
-            array={sizes}
-            itemSize={1}
-          />
-        </bufferGeometry>
-        <pointsMaterial
-          size={0.5}
-          map={fireTexture}
-          transparent
-          opacity={0.9}
-          blending={AdditiveBlending}
-          depthWrite={false}
-          sizeAttenuation={true}
-        />
-      </points>
-
-      {/* Fire glow lights */}
-      <pointLight position={[0, 0, 0]} intensity={3} color="#ff4400" distance={10} />
-      <pointLight position={[0, 1, 0]} intensity={2} color="#ff8800" distance={8} />
-      <pointLight position={[0, -1, 0]} intensity={1.5} color="#ff2200" distance={6} />
-    </group>
   )
 }
 
@@ -448,7 +283,7 @@ function generateSmokeTexture(): CanvasTexture {
 }
 
 // Smoke Particles Component - Mesh-based with rotation (like sbrl example)
-function SmokeParticles({ isActive }: { isActive?: boolean }) {
+function SmokeParticles({ isActive, isMobile }: { isActive?: boolean; isMobile?: boolean }) {
   const groupRef = useRef<any>(null)
   const smokeTexture = useMemo(() => generateSmokeTexture(), [])
 
@@ -461,13 +296,13 @@ function SmokeParticles({ isActive }: { isActive?: boolean }) {
     }[] = []
 
     const geometry = new PlaneGeometry(10, 10)
-    const particleCount = 30
+    const particleCount = isMobile ? 10 : 15 // Further reduced on mobile
 
     for (let i = 0; i < particleCount; i++) {
       const material = new MeshBasicMaterial({
         map: smokeTexture,
         transparent: true,
-        opacity: 0.4,
+        opacity: 0.35, // Slightly reduced for better performance
         depthWrite: false,
         side: DoubleSide,
       })
@@ -500,7 +335,7 @@ function SmokeParticles({ isActive }: { isActive?: boolean }) {
     }
 
     return particles
-  }, [smokeTexture])
+  }, [smokeTexture, isMobile])
 
   // Add meshes to group
   useMemo(() => {
@@ -630,7 +465,7 @@ export const frisbeeDiscThrowScene: Scene = {
     lighting: 'studio',
     performance: {
       shadows: false,
-      antialias: true,
+      antialias: typeof window !== 'undefined' && !isMobileDevice(), // Disable AA on mobile
     },
   },
 }
