@@ -50,6 +50,8 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
   // Initialize mobile detection on mount
   useEffect(() => {
     setIsMobile(isMobileDevice())
+    console.log('[Scene1] Component mounted, isMobile:', isMobileDevice())
+    console.log('[Scene1] Initial discs:', discs)
   }, [])
 
   // Track mouse position (normalized device coordinates)
@@ -195,8 +197,14 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
 
   // Handle disc click/tap
   const handleDiscClick = (discIndex: number, currentTime: number) => {
+    console.log('[Scene1] handleDiscClick called for index:', discIndex)
     const disc = discs[discIndex]
-    if (disc.active || disc.spawning) return // Already thrown or still spawning
+    console.log('[Scene1] Disc state:', disc)
+
+    if (disc.active || disc.spawning) {
+      console.log('[Scene1] Disc already active or spawning, ignoring')
+      return // Already thrown or still spawning
+    }
 
     // Calculate throw direction - straight forward (camera facing direction)
     const throwDirection = new Vector3(0, 0, -1)
@@ -209,6 +217,8 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
     // Set velocity - heavier/slower for realistic feel (like throwing a heavy disc)
     const throwSpeed = 15 // Increased speed for more satisfying throw
     const velocity = throwDirection.multiplyScalar(throwSpeed)
+
+    console.log('[Scene1] Calculated velocity:', velocity)
 
     // Set rotation velocity (realistic disc spin)
     const rotationVelocity = new Vector3(
@@ -231,15 +241,22 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       )
     )
 
+    console.log('[Scene1] Disc thrown! Setting lastThrowTime to:', currentTime)
     setLastThrowTime(currentTime)
   }
 
   // Handle scene click - throw the first available disc
   const handleSceneClick = () => {
+    console.log('[Scene1] Click detected!')
+    console.log('[Scene1] Current discs state:', discs)
     const currentTime = performance.now() / 1000 // Convert to seconds
     const readyDiscIndex = discs.findIndex(disc => !disc.active && !disc.spawning)
+    console.log('[Scene1] Ready disc index:', readyDiscIndex)
     if (readyDiscIndex !== -1) {
+      console.log('[Scene1] Throwing disc at index:', readyDiscIndex)
       handleDiscClick(readyDiscIndex, currentTime)
+    } else {
+      console.log('[Scene1] No ready disc found!')
     }
   }
 
@@ -248,8 +265,14 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       {/* Invisible click plane covering the entire viewport */}
       <mesh
         position={[0, 0, 0]}
-        onClick={handleSceneClick}
-        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          console.log('[Scene1] Mesh clicked!', e)
+          handleSceneClick()
+        }}
+        onPointerDown={(e) => {
+          console.log('[Scene1] Pointer down on mesh')
+          e.stopPropagation()
+        }}
       >
         <planeGeometry args={[100, 100]} />
         <meshBasicMaterial transparent opacity={0} />
@@ -407,6 +430,11 @@ function Disc({
 
   // Load the GM logo texture
   const logoTexture = useTexture('/images/GM_LOGO.png')
+
+  // Debug: log disc render state once
+  useEffect(() => {
+    console.log('[Disc] Rendered with state:', { isThrown, spawning, opacity, scale })
+  }, [])
 
   useFrame((state) => {
     if (meshRef.current && !isThrown && !spawning) {
