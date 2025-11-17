@@ -180,9 +180,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -8]}
-        scale={3.5}
+        scale={14.0}
         color="#cc1100"
-        magnitude={1.9}
+        magnitude={0.95}
         lacunarity={1.4}
         gain={0.5}
       />
@@ -191,9 +191,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -8]}
-        scale={3.5}
+        scale={14.0}
         color="#ff2200"
-        magnitude={1.8}
+        magnitude={0.9}
         lacunarity={1.3}
         gain={0.52}
       />
@@ -202,9 +202,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -8]}
-        scale={3.6}
+        scale={14.4}
         color="#ff4400"
-        magnitude={1.7}
+        magnitude={0.85}
         lacunarity={1.3}
         gain={0.54}
       />
@@ -213,9 +213,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -8]}
-        scale={3.7}
+        scale={14.8}
         color="#ff6600"
-        magnitude={1.6}
+        magnitude={0.8}
         lacunarity={1.2}
         gain={0.56}
       />
@@ -224,9 +224,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -8]}
-        scale={3.8}
+        scale={15.2}
         color="#ff8800"
-        magnitude={1.5}
+        magnitude={0.75}
         lacunarity={1.2}
         gain={0.58}
       />
@@ -235,9 +235,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -8]}
-        scale={3.9}
+        scale={15.6}
         color="#ffaa00"
-        magnitude={1.4}
+        magnitude={0.7}
         lacunarity={1.1}
         gain={0.6}
       />
@@ -246,9 +246,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -8]}
-        scale={4}
+        scale={16.0}
         color="#ffcc00"
-        magnitude={1.3}
+        magnitude={0.65}
         lacunarity={1.1}
         gain={0.62}
       />
@@ -299,8 +299,8 @@ function generateFireTexture(): CanvasTexture {
   return texture
 }
 
-// Fire component - Textured particle system
-function Fire({ isActive }: { isActive?: boolean }) {
+// FireParticles component - Textured particle system
+function FireParticles({ isActive }: { isActive?: boolean }) {
   const particlesRef = useRef<Points>(null)
   const fireTexture = useMemo(() => generateFireTexture(), [])
 
@@ -333,55 +333,11 @@ function Fire({ isActive }: { isActive?: boolean }) {
   useFrame((state, delta) => {
     if (!isActive || !particlesRef.current) return
 
-    const positions = particlesRef.current.geometry.attributes.position.array as Float32Array
-    const opacities = new Float32Array(particleCount)
-
-    for (let i = 0; i < particleCount; i++) {
-      // Start particles at fire location with some spread
-      const angle = Math.random() * Math.PI * 2
-      const radius = Math.random() * 2
-
-      positions[i * 3] = Math.cos(angle) * radius
-      positions[i * 3 + 1] = -1 + Math.random() * 2 // Start at fire base
-      positions[i * 3 + 2] = -8 + Math.sin(angle) * radius // At fire Z position
-
-      // Slow upward drift with lateral movement
-      velocities[i * 3] = (Math.random() - 0.5) * 0.3
-      velocities[i * 3 + 1] = 0.5 + Math.random() * 0.5 // Upward
-      velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.3
-
-      lifetimes[i] = Math.random()
-      sizes[i] = 0.3 + Math.random() * 0.8
-      opacities[i] = 0.1 + Math.random() * 0.3
-    }
-
-    return { positions, velocities, lifetimes, sizes, opacities }
-  }, [])
-
-  useFrame((state, delta) => {
-    if (!isActive || !smokeRef.current) return
-
-    const positions = smokeRef.current.geometry.attributes.position.array as Float32Array
-    const particleCount = positions.length / 3
+    const posArray = particlesRef.current.geometry.attributes.position.array as Float32Array
+    const particleCount = posArray.length / 3
 
     for (let i = 0; i < particleCount; i++) {
       const i3 = i * 3
-
-      lifetimes[i] += delta * 0.4
-
-      if (lifetimes[i] > 1.0) {
-        lifetimes[i] = 0
-        const angle = Math.random() * Math.PI * 2
-        const radius = Math.random() * 1.2
-
-        positions[i3] = Math.cos(angle) * radius
-        positions[i3 + 1] = -1.5
-        positions[i3 + 2] = Math.sin(angle) * radius
-
-        velocities[i3] = (Math.random() - 0.5) * 1.0
-        velocities[i3 + 1] = Math.random() * 2 + 1.5
-        velocities[i3 + 2] = (Math.random() - 0.5) * 1.0
-      } else {
 
       // Update lifetime
       lifetimes[i] += delta * 0.2
@@ -390,26 +346,24 @@ function Fire({ isActive }: { isActive?: boolean }) {
         // Reset particle at fire base
         lifetimes[i] = 0
         const angle = Math.random() * Math.PI * 2
-        const radius = Math.random() * 2
+        const radius = Math.random() * 1.2
 
-        positions[i3] = Math.cos(angle) * radius
-        positions[i3 + 1] = -1 + Math.random() * 2
-        positions[i3 + 2] = -8 + Math.sin(angle) * radius
+        posArray[i3] = Math.cos(angle) * radius
+        posArray[i3 + 1] = -1.5
+        posArray[i3 + 2] = Math.sin(angle) * radius
 
-        velocities[i3] = (Math.random() - 0.5) * 0.3
-        velocities[i3 + 1] = 0.5 + Math.random() * 0.5
-        velocities[i3 + 2] = (Math.random() - 0.5) * 0.3
-
-        sizes[i] = 0.3 + Math.random() * 0.8
+        velocities[i3] = (Math.random() - 0.5) * 1.0
+        velocities[i3 + 1] = Math.random() * 2 + 1.5
+        velocities[i3 + 2] = (Math.random() - 0.5) * 1.0
       } else {
         // Move particle
-        positions[i3] += velocities[i3] * delta
-        positions[i3 + 1] += velocities[i3 + 1] * delta
-        positions[i3 + 2] += velocities[i3 + 2] * delta
+        posArray[i3] += velocities[i3] * delta
+        posArray[i3 + 1] += velocities[i3 + 1] * delta
+        posArray[i3 + 2] += velocities[i3 + 2] * delta
 
         // Turbulence
-        positions[i3] += Math.sin(state.clock.elapsedTime * 2 + i * 0.1) * delta * 0.4
-        positions[i3 + 2] += Math.cos(state.clock.elapsedTime * 2 + i * 0.1) * delta * 0.4
+        posArray[i3] += Math.sin(state.clock.elapsedTime * 2 + i * 0.1) * delta * 0.4
+        posArray[i3 + 2] += Math.cos(state.clock.elapsedTime * 2 + i * 0.1) * delta * 0.4
 
         velocities[i3] *= 0.98
         velocities[i3 + 2] *= 0.98
@@ -452,41 +406,6 @@ function Fire({ isActive }: { isActive?: boolean }) {
       <pointLight position={[0, 1, 0]} intensity={2} color="#ff8800" distance={8} />
       <pointLight position={[0, -1, 0]} intensity={1.5} color="#ff2200" distance={6} />
     </group>
-        // Add turbulence
-        positions[i3] += Math.sin(state.clock.elapsedTime * 0.5 + i * 0.1) * delta * 0.2
-        positions[i3 + 2] += Math.cos(state.clock.elapsedTime * 0.5 + i * 0.1) * delta * 0.2
-
-        // Expand as it rises
-        sizes[i] += delta * 0.4
-
-        // Slow down vertical velocity
-        velocities[i3 + 1] *= 0.99
-      }
-    }
-
-    smokeRef.current.geometry.attributes.position.needsUpdate = true
-  })
-
-  return (
-    <points ref={smokeRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={positions.length / 3}
-          array={positions}
-          itemSize={3}
-        />
-      </bufferGeometry>
-      <pointsMaterial
-        size={2}
-        color="#666666"
-        transparent
-        opacity={0.15}
-        blending={AdditiveBlending}
-        depthWrite={false}
-        sizeAttenuation={true}
-      />
-    </points>
   )
 }
 
@@ -535,9 +454,6 @@ function SmokeParticles({ isActive }: { isActive?: boolean }) {
 
   // Create smoke mesh particles
   const smokeParticles = useMemo(() => {
-  // Particle data
-  const particleData = useMemo(() => {
-    const count = 100 // Fewer but larger smoke sprites
     const particles: {
       mesh: Mesh
       velocity: Vector3
@@ -570,7 +486,7 @@ function SmokeParticles({ isActive }: { isActive?: boolean }) {
       // Random initial rotation
       mesh.rotation.z = Math.random() * Math.PI * 2
       const initialSize = 0.5 + Math.random() * 3.5
-      sprite.scale.set(initialSize, initialSize, 1)
+      mesh.scale.set(initialSize, initialSize, 1)
 
       particles.push({
         mesh,
