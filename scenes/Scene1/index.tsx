@@ -33,12 +33,13 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
   const [isMobile, setIsMobile] = useState(false)
   const [discs, setDiscs] = useState<DiscState[]>([
     {
-      position: new Vector3(0, 0, 0),
+      position: new Vector3(0, 2, 0), // Aligned with camera height for proper visibility
       velocity: new Vector3(0, 0, 0),
       rotation: new Vector3(0, 0, 0),
       rotationVelocity: new Vector3(0, 0, 0),
       opacity: 1,
       active: false,
+      spawning: false,
       spawnTime: 0,
       scale: 1,
       hitFire: false,
@@ -46,6 +47,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       spawnVelocity: new Vector3(0, 0, 0),
     },
   ])
+  const [lastThrowTime, setLastThrowTime] = useState(0)
 
   // Track mouse position (normalized device coordinates)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
@@ -64,6 +66,8 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
   // Animate discs physics
   useFrame((state, delta) => {
     if (!isActive) return
+
+    const currentTime = state.clock.elapsedTime
 
     // Update discs physics
     setDiscs((prevDiscs) =>
@@ -169,17 +173,24 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           newOpacity = Math.max(0, 1 - fadeProgress)
         }
 
+        // Quick fade when hitting fire
+        if (hitFire) {
+          const timeSinceHit = currentTime - hitFireTime
+          newOpacity = Math.max(0, 1 - timeSinceHit * 3) // Fade out in 0.33 seconds
+        }
+
         // Deactivate if too far or fully faded
         const stillActive = distance < fadeEndDistance && newOpacity > 0
 
         return {
+          ...disc,
           position: newPosition,
           velocity: newVelocity,
           rotation: newRotation,
-          rotationVelocity: disc.rotationVelocity,
           opacity: newOpacity,
           active: stillActive,
-          spawnTime: disc.spawnTime,
+          hitFire,
+          hitFireTime,
         }
       })
     )
@@ -199,11 +210,11 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         return [
           ...activeDiscs,
           {
-            position: new Vector3(0, 0, 0),
+            position: new Vector3(0, 2, 0),
             velocity: new Vector3(0, 0, 0),
             rotation: new Vector3(0, 0, 0),
             rotationVelocity: new Vector3(0, 0, 0),
-            opacity: 1,
+            opacity: 0,
             active: false,
             spawning: true,
             spawnTime: currentTime,
@@ -214,6 +225,8 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           },
         ]
       }
+
+      return prevDiscs
     })
   })
 
@@ -264,18 +277,23 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           : d
       )
       // Only add a new inactive disc if there isn't one already
-      const hasInactive = updated.some(d => !d.active)
+      const hasInactive = updated.some(d => !d.active && !d.spawning)
       if (!hasInactive) {
         return [
           ...updated,
           {
-            position: new Vector3(0, 0, 0),
+            position: new Vector3(0, 2, 0),
             velocity: new Vector3(0, 0, 0),
             rotation: new Vector3(0, 0, 0),
             rotationVelocity: new Vector3(0, 0, 0),
-            opacity: 1,
+            opacity: 0,
             active: false,
+            spawning: true,
             spawnTime: currentTimeRef.current, // Use same clock as state.clock
+            scale: 0.1,
+            hitFire: false,
+            hitFireTime: 0,
+            spawnVelocity: new Vector3(0, 6, 0),
           },
         ]
       }
