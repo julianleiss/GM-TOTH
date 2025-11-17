@@ -165,7 +165,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
 
       {/* Massive realistic fire effect - volumetric shader-based */}
       <Fire
-        texture="https://s3-us-west-2.amazonaws.com/s.cdpn.io/212131/Fire.png"
+        texture="/images/fire.png"
         position={[0, 0, -2]}
         scale={6}
         color="#ff6600"
