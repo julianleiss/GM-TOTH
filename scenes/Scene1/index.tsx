@@ -23,6 +23,8 @@ interface DiscState {
   spawning: boolean
   spawnTime: number
   scale: number
+  hitFire: boolean
+  hitFireTime: number
 }
 
 function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
@@ -39,6 +41,8 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       spawning: false,
       spawnTime: 0,
       scale: 1,
+      hitFire: false,
+      hitFireTime: 0,
     },
   ])
   const [lastThrowTime, setLastThrowTime] = useState(0)
@@ -105,6 +109,18 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         const newVelocity = disc.velocity.clone()
         newVelocity.y -= 9.8 * delta // More realistic gravity (9.8 m/s²)
 
+        // Check collision with fire (fire is at [0, -1, -8])
+        const fireCenter = new Vector3(0, 0, -8)
+        const distanceToFire = newPosition.distanceTo(fireCenter)
+        let hitFire = disc.hitFire
+        let hitFireTime = disc.hitFireTime
+
+        // Fire collision zone: radius ~7 units
+        if (!hitFire && distanceToFire < 7 && newPosition.z < -4) {
+          hitFire = true
+          hitFireTime = currentTime
+        }
+
         // Fade out based on distance
         const distance = newPosition.length()
         const fadeStartDistance = 15
@@ -114,6 +130,12 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         if (distance > fadeStartDistance) {
           const fadeProgress = (distance - fadeStartDistance) / (fadeEndDistance - fadeStartDistance)
           newOpacity = Math.max(0, 1 - fadeProgress)
+        }
+
+        // Quick fade when hitting fire
+        if (hitFire) {
+          const timeSinceHit = currentTime - hitFireTime
+          newOpacity = Math.max(0, 1 - timeSinceHit * 3) // Fade out in 0.33 seconds
         }
 
         // Deactivate if too far or fully faded
@@ -126,6 +148,8 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           rotation: newRotation,
           opacity: newOpacity,
           active: stillActive,
+          hitFire,
+          hitFireTime,
         }
       })
     )
@@ -154,6 +178,8 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
             spawning: true,
             spawnTime: currentTime,
             scale: 0.1,
+            hitFire: false,
+            hitFireTime: 0,
           },
         ]
       }
@@ -289,8 +315,60 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           camera={camera}
           scale={disc.scale}
           spawning={disc.spawning}
+          hitFire={disc.hitFire}
+          hitFireTime={disc.hitFireTime}
         />
       ))}
+
+      {/* Fire collision effects */}
+      {discs.map((disc, index) =>
+        disc.hitFire && (
+          <FireCollisionEffect
+            key={`fire-effect-${index}`}
+            position={disc.position}
+            startTime={disc.hitFireTime}
+          />
+        )
+      )}
+    </>
+  )
+}
+
+// Fire collision effect - explosion when logo hits fire
+function FireCollisionEffect({
+  position,
+  startTime,
+}: {
+  position: Vector3
+  startTime: number
+}) {
+  const explosionLightRef = useRef<any>(null)
+
+  useFrame((state) => {
+    if (!explosionLightRef.current) return
+
+    const elapsed = state.clock.elapsedTime - startTime
+
+    if (elapsed < 0.5) {
+      // Explosion flash - quick bright burst
+      const intensity = Math.max(0, 20 * (1 - elapsed / 0.5))
+      explosionLightRef.current.intensity = intensity
+    } else {
+      explosionLightRef.current.intensity = 0
+    }
+  })
+
+  return (
+    <>
+      {/* Bright explosion flash */}
+      <pointLight
+        ref={explosionLightRef}
+        position={[position.x, position.y, position.z]}
+        color="#ffaa00"
+        intensity={20}
+        distance={15}
+        decay={2}
+      />
     </>
   )
 }
@@ -304,6 +382,8 @@ function Disc({
   camera,
   scale,
   spawning,
+  hitFire,
+  hitFireTime,
 }: {
   position: Vector3
   rotation: Vector3
@@ -312,23 +392,47 @@ function Disc({
   camera: any
   scale: number
   spawning: boolean
+  hitFire: boolean
+  hitFireTime: number
 }) {
   const meshRef = useRef<Mesh>(null)
+  const groupRef = useRef<any>(null)
   const glowRef = useRef<any>(null)
+  const idleGlowRef = useRef<any>(null)
 
   // Load the GM logo texture
   const logoTexture = useTexture('/images/GM_LOGO.png')
 
-  useFrame(() => {
-    if (meshRef.current && !isThrown) {
-      // Make disc face camera when not thrown
+  useFrame((state) => {
+    if (meshRef.current && !isThrown && !spawning) {
+      // Constant rotation when idle
+      meshRef.current.rotation.z += 0.01
+
+      // Make disc face camera
       meshRef.current.lookAt(camera.position)
       meshRef.current.scale.set(scale, scale, scale)
+
+      // Idle floating animation
+      const floatY = Math.sin(state.clock.elapsedTime * 1.5) * 0.1
+      const floatX = Math.sin(state.clock.elapsedTime * 0.8) * 0.05
+      if (groupRef.current) {
+        groupRef.current.position.set(
+          position.x + floatX,
+          position.y + floatY,
+          position.z
+        )
+      }
     } else if (meshRef.current && isThrown) {
       // Apply rotation when thrown
       meshRef.current.rotation.x = rotation.x
       meshRef.current.rotation.y = rotation.y
       meshRef.current.rotation.z = rotation.z
+
+      if (groupRef.current) {
+        groupRef.current.position.set(position.x, position.y, position.z)
+      }
+    } else if (groupRef.current && spawning) {
+      groupRef.current.position.set(position.x, position.y, position.z)
     }
 
     // Pulse glow effect during spawn
@@ -336,15 +440,21 @@ function Disc({
       const pulse = Math.sin(Date.now() * 0.01) * 0.3 + 0.7
       glowRef.current.intensity = 8 * pulse * scale
     }
+
+    // Soft glow when idle
+    if (idleGlowRef.current && !isThrown && !spawning) {
+      const idlePulse = Math.sin(state.clock.elapsedTime * 2) * 0.3 + 0.7
+      idleGlowRef.current.intensity = 2 * idlePulse
+    }
   })
 
   return (
-    <group>
+    <group ref={groupRef}>
       {/* Spawn glow effect - bright flash like a video game */}
       {spawning && (
         <pointLight
           ref={glowRef}
-          position={[position.x, position.y, position.z]}
+          position={[0, 0, 0]}
           color="#ffffff"
           intensity={8}
           distance={8}
@@ -352,9 +462,21 @@ function Disc({
         />
       )}
 
+      {/* Idle glow effect - soft permanent glow */}
+      {!isThrown && !spawning && (
+        <pointLight
+          ref={idleGlowRef}
+          position={[0, 0, 0]}
+          color="#ffffff"
+          intensity={2}
+          distance={5}
+          decay={2}
+        />
+      )}
+
       <mesh
         ref={meshRef}
-        position={[position.x, position.y, position.z]}
+        position={[0, 0, 0]}
       >
         {/* Plane shape to display the logo image - 3x bigger */}
         <planeGeometry args={[6, 6]} />
