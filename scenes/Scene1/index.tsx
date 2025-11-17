@@ -297,7 +297,7 @@ function Disc({
 export const frisbeeDiscThrowScene: Scene = {
   metadata: {
     id: 'frisbee-disc-throw',
-    name: 'Frisbee Disc Throw',
+    name: '01',
     description: 'Click or tap the red disc to throw it through floating blue shapes',
     tags: ['interactive', 'physics', 'game'],
   },

@@ -51,7 +51,7 @@ function WireframeKnotComponent({ isActive }: SceneProps) {
 export const wireframeKnotScene: Scene = {
   metadata: {
     id: 'wireframe-knot',
-    name: 'Wireframe Knot',
+    name: '04',
     description: 'An elegant wireframe torus knot',
     tags: ['wireframe', '3d', 'geometric'],
   },

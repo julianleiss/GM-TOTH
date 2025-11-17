@@ -37,7 +37,7 @@ function RotatingCubeComponent({ isActive }: SceneProps) {
 export const rotatingCubeScene: Scene = {
   metadata: {
     id: 'rotating-cube',
-    name: 'Rotating Cube',
+    name: '02',
     description: 'A simple rotating cube with orbit controls',
     tags: ['basic', '3d', 'interactive'],
   },

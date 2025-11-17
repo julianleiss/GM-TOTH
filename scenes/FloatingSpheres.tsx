@@ -65,7 +65,7 @@ function FloatingSpheresComponent({ isActive }: SceneProps) {
 export const floatingSpheresScene: Scene = {
   metadata: {
     id: 'floating-spheres',
-    name: 'Floating Spheres',
+    name: '03',
     description: 'Colorful spheres arranged in a circular pattern',
     tags: ['3d', 'colorful', 'interactive'],
   },

@@ -65,7 +65,7 @@ function ParticleFieldComponent({ isActive }: SceneProps) {
 export const particleFieldScene: Scene = {
   metadata: {
     id: 'particle-field',
-    name: 'Particle Field',
+    name: '05',
     description: 'A mesmerizing field of glowing particles',
     tags: ['particles', '3d', 'abstract'],
   },
