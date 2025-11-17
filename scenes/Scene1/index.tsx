@@ -47,16 +47,16 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
   ])
   const [lastThrowTime, setLastThrowTime] = useState(0)
 
-  // Detect mobile and optimize renderer
-  useEffect(() => {
-    setIsMobile(isMobileDevice())
+  // Track mouse position (normalized device coordinates)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
-    // Mobile optimizations
-    if (isMobileDevice()) {
-      gl.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)) // Limit pixel ratio for performance
-    }
-  }, [gl])
-
+  // Handle mouse movement
+  const handleMouseMove = (event: any) => {
+    // Convert to normalized device coordinates (-1 to +1)
+    const x = (event.clientX / size.width) * 2 - 1
+    const y = -(event.clientY / size.height) * 2 + 1
+    setMousePos({ x, y })
+  }
 
   // Animate discs physics
   useFrame((state, delta) => {
