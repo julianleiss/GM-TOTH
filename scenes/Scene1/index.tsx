@@ -20,6 +20,7 @@ interface DiscState {
   rotationVelocity: Vector3
   opacity: number
   active: boolean
+  spawnTime: number // Time when disc was spawned
 }
 
 function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
@@ -33,6 +34,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       rotationVelocity: new Vector3(0, 0, 0),
       opacity: 1,
       active: false,
+      spawnTime: 0,
     },
   ])
 
@@ -113,7 +115,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         // If no center disc, keep the first inactive one
         return [...activeDiscs, inactiveDiscs[0]]
       } else {
-        // If no inactive discs at all, create one
+        // If no inactive discs at all, create one with spawn animation
         return [
           ...activeDiscs,
           {
@@ -123,6 +125,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
             rotationVelocity: new Vector3(0, 0, 0),
             opacity: 1,
             active: false,
+            spawnTime: state.clock.elapsedTime,
           },
         ]
       }
@@ -179,6 +182,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
             rotationVelocity: new Vector3(0, 0, 0),
             opacity: 1,
             active: false,
+            spawnTime: Date.now() / 1000, // Convert to seconds
           },
         ]
       }
@@ -279,6 +283,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           isThrown={disc.active}
           camera={camera}
           mousePos={mousePos}
+          spawnTime={disc.spawnTime}
         />
       ))}
     </>
@@ -441,6 +446,7 @@ function Disc({
   isThrown,
   camera,
   mousePos,
+  spawnTime,
 }: {
   position: Vector3
   rotation: Vector3
@@ -449,22 +455,62 @@ function Disc({
   isThrown: boolean
   camera: any
   mousePos: { x: number; y: number }
+  spawnTime: number
 }) {
   const meshRef = useRef<Mesh>(null)
 
   // Load the GM logo texture
   const logoTexture = useTexture('/images/GM_LOGO.png')
 
-  useFrame(() => {
+  // Spawn animation duration (in seconds)
+  const SPAWN_DURATION = 0.6
+
+  // Calculate spawn flash intensity
+  const [flashIntensity, setFlashIntensity] = useState(0)
+
+  useFrame((state) => {
     if (meshRef.current && !isThrown) {
+      // Calculate spawn animation progress
+      const currentTime = state.clock.elapsedTime
+      const timeSinceSpawn = currentTime - spawnTime
+      const spawnProgress = Math.min(timeSinceSpawn / SPAWN_DURATION, 1)
+
+      // Flash effect: bright at start, fade quickly
+      const flash = timeSinceSpawn < SPAWN_DURATION ? Math.max(0, 1 - spawnProgress * 3) : 0
+      setFlashIntensity(flash * 15)
+
+      // Easing function for bounce (easeOutBounce)
+      const bounce = (t: number) => {
+        if (t < 1 / 2.75) {
+          return 7.5625 * t * t
+        } else if (t < 2 / 2.75) {
+          t -= 1.5 / 2.75
+          return 7.5625 * t * t + 0.75
+        } else if (t < 2.5 / 2.75) {
+          t -= 2.25 / 2.75
+          return 7.5625 * t * t + 0.9375
+        } else {
+          t -= 2.625 / 2.75
+          return 7.5625 * t * t + 0.984375
+        }
+      }
+
       // Make logo slightly follow mouse cursor to indicate throw angle
       const followAmount = 0.3 // How much to follow the cursor (0 = none, 1 = full)
       const targetX = position.x + mousePos.x * followAmount
       const targetY = position.y + mousePos.y * followAmount
 
+      // Apply spawn animation: bounce from below
+      const bounceOffset = timeSinceSpawn < SPAWN_DURATION ? (1 - bounce(spawnProgress)) * -3 : 0
+
       meshRef.current.position.x = targetX
-      meshRef.current.position.y = targetY
+      meshRef.current.position.y = targetY + bounceOffset
       meshRef.current.position.z = 1 // Keep logo slightly forward to prevent clipping
+
+      // Scale animation: start small, grow to normal size
+      const scaleProgress = Math.min(spawnProgress * 1.5, 1)
+      const scale = 0.3 + scaleProgress * 0.7
+      meshRef.current.scale.set(scale, scale, 1)
 
       // Make disc face camera when not thrown
       meshRef.current.lookAt(camera.position)
@@ -481,28 +527,41 @@ function Disc({
   })
 
   return (
-    <mesh
-      ref={meshRef}
-      position={[position.x, position.y, position.z]}
-      frustumCulled={false}
-      onClick={(e) => {
-        e.stopPropagation()
-        onClick()
-      }}
-      onPointerDown={(e) => {
-        e.stopPropagation()
-      }}
-    >
-      {/* Plane shape to display the logo image - larger size for better visibility */}
-      <planeGeometry args={[12, 12]} />
-      <meshBasicMaterial
-        map={logoTexture}
-        transparent
-        opacity={opacity}
-        side={DoubleSide}
-        toneMapped={false}
-      />
-    </mesh>
+    <>
+      {/* Flash light effect during spawn */}
+      {!isThrown && flashIntensity > 0 && (
+        <pointLight
+          position={[position.x, position.y, position.z + 2]}
+          intensity={flashIntensity}
+          color="#ffffff"
+          distance={10}
+          decay={2}
+        />
+      )}
+
+      <mesh
+        ref={meshRef}
+        position={[position.x, position.y, position.z]}
+        frustumCulled={false}
+        onClick={(e) => {
+          e.stopPropagation()
+          onClick()
+        }}
+        onPointerDown={(e) => {
+          e.stopPropagation()
+        }}
+      >
+        {/* Plane shape to display the logo image - larger size for better visibility */}
+        <planeGeometry args={[12, 12]} />
+        <meshBasicMaterial
+          map={logoTexture}
+          transparent
+          opacity={opacity}
+          side={DoubleSide}
+          toneMapped={false}
+        />
+      </mesh>
+    </>
   )
 }
 
