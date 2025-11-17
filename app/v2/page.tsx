@@ -23,6 +23,22 @@ export default function HomeV2() {
 
       {/* Navigation Header */}
       <Navigation />
+
+      {/* Site Under Destruction Text */}
+      <div
+        className="absolute left-0 right-0 text-center z-20"
+        style={{
+          top: '320px',
+          fontFamily: 'Dunbar Tall, Arial, sans-serif',
+          fontSize: '48px',
+          color: '#FF0000',
+          fontWeight: 900,
+          textTransform: 'uppercase',
+          letterSpacing: '0.02em'
+        }}
+      >
+        SITE UNDER DESTRUCTION
+      </div>
     </main>
   )
 }
