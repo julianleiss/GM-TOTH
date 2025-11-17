@@ -150,18 +150,22 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
             }
           : d
       )
-      // Add a new inactive disc immediately for next throw
-      return [
-        ...updated,
-        {
-          position: new Vector3(0, 0, 0),
-          velocity: new Vector3(0, 0, 0),
-          rotation: new Vector3(0, 0, 0),
-          rotationVelocity: new Vector3(0, 0, 0),
-          opacity: 1,
-          active: false,
-        },
-      ]
+      // Only add a new inactive disc if there isn't one already
+      const hasInactive = updated.some(d => !d.active)
+      if (!hasInactive) {
+        return [
+          ...updated,
+          {
+            position: new Vector3(0, 0, 0),
+            velocity: new Vector3(0, 0, 0),
+            rotation: new Vector3(0, 0, 0),
+            rotationVelocity: new Vector3(0, 0, 0),
+            opacity: 1,
+            active: false,
+          },
+        ]
+      }
+      return updated
     })
   }
 
@@ -443,6 +447,7 @@ function Disc({
 
       meshRef.current.position.x = targetX
       meshRef.current.position.y = targetY
+      meshRef.current.position.z = 1 // Keep logo slightly forward to prevent clipping
 
       // Make disc face camera when not thrown
       meshRef.current.lookAt(camera.position)
@@ -462,6 +467,7 @@ function Disc({
     <mesh
       ref={meshRef}
       position={[position.x, position.y, position.z]}
+      frustumCulled={false}
       onClick={(e) => {
         e.stopPropagation()
         onClick()
@@ -496,7 +502,7 @@ export const frisbeeDiscThrowScene: Scene = {
     camera: {
       position: [0, 2, 8],
       fov: 90,
-      near: 0.01, // Very small near plane to prevent clipping
+      near: 0.001, // Extremely small near plane to prevent clipping
       far: 1000,
     },
     lighting: 'studio',
