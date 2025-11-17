@@ -115,8 +115,8 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         let hitFire = disc.hitFire
         let hitFireTime = disc.hitFireTime
 
-        // Fire collision zone: radius ~7 units
-        if (!hitFire && distanceToFire < 7 && newPosition.z < -4) {
+        // Fire collision zone: radius ~14 units
+        if (!hitFire && distanceToFire < 14 && newPosition.z < -4) {
           hitFire = true
           hitFireTime = currentTime
         }
@@ -273,7 +273,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -8]}
-        scale={14.0}
+        scale={28.0}
         color="#ff3300"
         magnitude={0.5}
         lacunarity={0.8}
@@ -284,7 +284,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <Fire
         texture="/images/fire.png"
         position={[0, -1, -8]}
-        scale={14.8}
+        scale={29.6}
         color="#ff6600"
         magnitude={0.45}
         lacunarity={0.75}
@@ -296,7 +296,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         <Fire
           texture="/images/fire.png"
           position={[0, -1, -8]}
-          scale={15.4}
+          scale={30.8}
           color="#ffaa00"
           magnitude={0.4}
           lacunarity={0.7}
