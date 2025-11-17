@@ -3,13 +3,14 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Mesh } from 'three'
-import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
+import { OrbitControls } from '@react-three/drei'
+import { Scene, SceneProps } from '@/lib/types'
 
-export default function RotatingCube() {
+function RotatingCubeComponent({ isActive }: SceneProps) {
   const meshRef = useRef<Mesh>(null)
 
   useFrame((state, delta) => {
-    if (meshRef.current) {
+    if (meshRef.current && isActive) {
       meshRef.current.rotation.x += delta * 0.5
       meshRef.current.rotation.y += delta * 0.3
     }
@@ -17,7 +18,6 @@ export default function RotatingCube() {
 
   return (
     <>
-      <PerspectiveCamera makeDefault position={[0, 0, 5]} />
       <OrbitControls enableZoom={true} enablePan={true} enableRotate={true} />
 
       <ambientLight intensity={0.5} />
@@ -32,3 +32,28 @@ export default function RotatingCube() {
     </>
   )
 }
+
+// Scene definition
+export const rotatingCubeScene: Scene = {
+  metadata: {
+    id: 'rotating-cube',
+    name: 'Rotating Cube',
+    description: 'A simple rotating cube with orbit controls',
+    tags: ['basic', '3d', 'interactive'],
+  },
+  component: RotatingCubeComponent,
+  config: {
+    camera: {
+      position: [0, 0, 5],
+      fov: 75,
+    },
+    lighting: 'default',
+    performance: {
+      shadows: false,
+      antialias: true,
+    },
+  },
+}
+
+// Default export for backward compatibility
+export default RotatingCubeComponent
