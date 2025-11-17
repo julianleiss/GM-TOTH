@@ -158,18 +158,18 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <ambientLight intensity={0.15} />
       <directionalLight position={[5, 8, 5]} intensity={0.2} />
 
-      {/* Fire glow lights - more intense for bigger fire */}
-      <pointLight position={[0, 0, -2]} intensity={8} color="#ff3300" distance={30} decay={2} />
-      <pointLight position={[0, 4, -2]} intensity={6} color="#ff6600" distance={25} decay={2} />
-      <pointLight position={[0, -2, -2]} intensity={5} color="#cc1100" distance={20} decay={2} />
-      <pointLight position={[0, 8, -2]} intensity={3} color="#ffaa00" distance={20} decay={2} />
+      {/* Fire glow lights - centered */}
+      <pointLight position={[0, 0, 0]} intensity={6} color="#ff3300" distance={20} decay={2} />
+      <pointLight position={[0, 3, 0]} intensity={4} color="#ff6600" distance={18} decay={2} />
+      <pointLight position={[0, -1, 0]} intensity={3} color="#cc1100" distance={15} decay={2} />
+      <pointLight position={[0, 5, 0]} intensity={2} color="#ffaa00" distance={15} decay={2} />
 
       {/* Massive realistic fire effect - volumetric shader-based */}
       {/* Core fire - deep red/orange */}
       <Fire
         texture="/images/fire.png"
-        position={[0, 0, -2]}
-        scale={18}
+        position={[0, 0, 0]}
+        scale={9}
         color="#ff2200"
         magnitude={1.8}
         lacunarity={1.5}
@@ -179,8 +179,8 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       {/* Mid layer - orange flames */}
       <Fire
         texture="/images/fire.png"
-        position={[0, 0, -2]}
-        scale={18}
+        position={[0, 0, 0]}
+        scale={9}
         color="#ff6600"
         magnitude={1.6}
         lacunarity={1.3}
@@ -190,8 +190,8 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       {/* Outer layer - yellow tips */}
       <Fire
         texture="/images/fire.png"
-        position={[0, 0, -2]}
-        scale={18.5}
+        position={[0, 0, 0]}
+        scale={9.5}
         color="#ffaa00"
         magnitude={1.4}
         lacunarity={1.2}
@@ -201,8 +201,8 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       {/* Top smoke/heat haze - lighter */}
       <Fire
         texture="/images/fire.png"
-        position={[0, 1, -2]}
-        scale={16}
+        position={[0, 0.5, 0]}
+        scale={8}
         color="#888888"
         magnitude={1.0}
         lacunarity={1.0}
