@@ -154,59 +154,145 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         minPolarAngle={Math.PI / 6}
       />
 
+      {/* Black ground plane */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -3, 0]} receiveShadow>
+        <planeGeometry args={[100, 100]} />
+        <meshStandardMaterial
+          color="#000000"
+          roughness={0.9}
+          metalness={0.1}
+        />
+      </mesh>
+
       {/* Lighting */}
-      <ambientLight intensity={0.15} />
-      <directionalLight position={[5, 8, 5]} intensity={0.2} />
+      <ambientLight intensity={0.05} />
+      <directionalLight position={[5, 8, 5]} intensity={0.1} />
 
-      {/* Fire glow lights - centered */}
-      <pointLight position={[0, 0, 0]} intensity={6} color="#ff3300" distance={20} decay={2} />
-      <pointLight position={[0, 3, 0]} intensity={4} color="#ff6600" distance={18} decay={2} />
-      <pointLight position={[0, -1, 0]} intensity={3} color="#cc1100" distance={15} decay={2} />
-      <pointLight position={[0, 5, 0]} intensity={2} color="#ffaa00" distance={15} decay={2} />
+      {/* Fire glow lights - positioned at fire location */}
+      <pointLight position={[0, 0, -8]} intensity={8} color="#ff3300" distance={25} decay={2} />
+      <pointLight position={[0, 2, -8]} intensity={6} color="#ff6600" distance={22} decay={2} />
+      <pointLight position={[0, -1, -8]} intensity={5} color="#cc1100" distance={18} decay={2} />
+      <pointLight position={[0, 4, -8]} intensity={4} color="#ffaa00" distance={20} decay={2} />
+      <pointLight position={[0, 1, -8]} intensity={3} color="#ff8800" distance={18} decay={2} />
 
-      {/* Massive realistic fire effect - volumetric shader-based */}
-      {/* Core fire - deep red/orange */}
+      {/* Fire in the distance - multiple small flames */}
+      {/* Core flames layer 1 - deep red */}
       <Fire
         texture="/images/fire.png"
-        position={[0, 0, 0]}
-        scale={9}
-        color="#ff2200"
-        magnitude={1.8}
-        lacunarity={1.5}
+        position={[0, -1, -8]}
+        scale={3.5}
+        color="#cc1100"
+        magnitude={1.9}
+        lacunarity={1.4}
         gain={0.5}
       />
 
-      {/* Mid layer - orange flames */}
+      {/* Core flames layer 2 - red */}
       <Fire
         texture="/images/fire.png"
-        position={[0, 0, 0]}
-        scale={9}
-        color="#ff6600"
-        magnitude={1.6}
+        position={[0, -1, -8]}
+        scale={3.5}
+        color="#ff2200"
+        magnitude={1.8}
         lacunarity={1.3}
-        gain={0.55}
+        gain={0.52}
       />
 
-      {/* Outer layer - yellow tips */}
+      {/* Mid flames layer 1 - orange-red */}
       <Fire
         texture="/images/fire.png"
-        position={[0, 0, 0]}
-        scale={9.5}
+        position={[0, -1, -8]}
+        scale={3.6}
+        color="#ff4400"
+        magnitude={1.7}
+        lacunarity={1.3}
+        gain={0.54}
+      />
+
+      {/* Mid flames layer 2 - orange */}
+      <Fire
+        texture="/images/fire.png"
+        position={[0, -1, -8]}
+        scale={3.7}
+        color="#ff6600"
+        magnitude={1.6}
+        lacunarity={1.2}
+        gain={0.56}
+      />
+
+      {/* Outer flames layer 1 - bright orange */}
+      <Fire
+        texture="/images/fire.png"
+        position={[0, -1, -8]}
+        scale={3.8}
+        color="#ff8800"
+        magnitude={1.5}
+        lacunarity={1.2}
+        gain={0.58}
+      />
+
+      {/* Outer flames layer 2 - yellow-orange */}
+      <Fire
+        texture="/images/fire.png"
+        position={[0, -1, -8]}
+        scale={3.9}
         color="#ffaa00"
         magnitude={1.4}
-        lacunarity={1.2}
+        lacunarity={1.1}
         gain={0.6}
       />
 
-      {/* Top smoke/heat haze - lighter */}
+      {/* Yellow tips */}
       <Fire
         texture="/images/fire.png"
-        position={[0, 0.5, 0]}
-        scale={8}
-        color="#888888"
-        magnitude={1.0}
-        lacunarity={1.0}
-        gain={0.4}
+        position={[0, -1, -8]}
+        scale={4}
+        color="#ffcc00"
+        magnitude={1.3}
+        lacunarity={1.1}
+        gain={0.62}
+      />
+
+      {/* Smoke layers - dark gray */}
+      <Fire
+        texture="/images/fire.png"
+        position={[0, 0.5, -8]}
+        scale={3.5}
+        color="#222222"
+        magnitude={0.8}
+        lacunarity={0.9}
+        gain={0.35}
+      />
+
+      <Fire
+        texture="/images/fire.png"
+        position={[0, 1.5, -8]}
+        scale={4}
+        color="#333333"
+        magnitude={0.7}
+        lacunarity={0.8}
+        gain={0.3}
+      />
+
+      <Fire
+        texture="/images/fire.png"
+        position={[0, 2.5, -8]}
+        scale={4.5}
+        color="#444444"
+        magnitude={0.6}
+        lacunarity={0.7}
+        gain={0.25}
+      />
+
+      {/* Light smoke - rising high */}
+      <Fire
+        texture="/images/fire.png"
+        position={[0, 3.5, -8]}
+        scale={5}
+        color="#555555"
+        magnitude={0.5}
+        lacunarity={0.6}
+        gain={0.2}
       />
 
       {/* Frisbee discs */}
@@ -285,7 +371,7 @@ export const frisbeeDiscThrowScene: Scene = {
   metadata: {
     id: 'frisbee-disc-throw',
     name: '01',
-    description: 'Click or tap the red disc to throw it through the blazing fire',
+    description: 'Throw the red disc toward the distant fire burning in the void',
     tags: ['interactive', 'physics', 'game'],
   },
   component: FrisbeeDiscThrowComponent,
