@@ -36,16 +36,16 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
     },
   ])
 
-  // Detect mobile and optimize renderer
-  useEffect(() => {
-    setIsMobile(isMobileDevice())
+  // Track mouse position (normalized device coordinates)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
-    // Mobile optimizations
-    if (isMobileDevice()) {
-      gl.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)) // Limit pixel ratio for performance
-    }
-  }, [gl])
-
+  // Handle mouse movement
+  const handleMouseMove = (event: any) => {
+    // Convert to normalized device coordinates (-1 to +1)
+    const x = (event.clientX / size.width) * 2 - 1
+    const y = -(event.clientY / size.height) * 2 + 1
+    setMousePos({ x, y })
+  }
 
   // Animate discs physics
   useFrame((state, delta) => {
@@ -125,23 +125,25 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
     const disc = discs[discIndex]
     if (disc.active) return // Already thrown
 
-    // Calculate throw direction
-    const throwDirection = new Vector3(0, 0, -1)
+    // Calculate throw direction based on mouse position
+    // Use mouse position to determine horizontal and vertical direction
+    const throwDirection = new Vector3(
+      mousePos.x * 1.5, // Horizontal based on mouse X
+      mousePos.y * 1.5 + 0.3, // Vertical based on mouse Y, plus base upward angle
+      -1 // Always throw forward
+    )
     throwDirection.applyQuaternion(camera.quaternion)
-
-    // Add some upward angle
-    throwDirection.y += 0.2
     throwDirection.normalize()
 
     // Set velocity (speed: 12 units/sec)
     const throwSpeed = 12
     const velocity = throwDirection.multiplyScalar(throwSpeed)
 
-    // Set rotation velocity (spin)
+    // Stone-like throw: minimal rotation (just a slight tumble)
     const rotationVelocity = new Vector3(
-      Math.random() * 4 - 2, // random spin on x
-      8, // strong spin on y axis
-      Math.random() * 4 - 2  // random spin on z
+      Math.random() * 2 - 1, // minimal spin on x
+      Math.random() * 2 - 1, // minimal spin on y
+      Math.random() * 2 - 1  // minimal spin on z
     )
 
     setDiscs((prevDiscs) =>
@@ -228,7 +230,16 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       {/* Smoke effect - single optimized instance */}
       <SmokeParticles isActive={isActive} isMobile={isMobile} />
 
-      {/* Frisbee discs */}
+      {/* Mouse tracking group */}
+      <group onPointerMove={handleMouseMove}>
+        {/* Invisible plane to capture mouse events */}
+        <mesh position={[0, 0, 0]} visible={false}>
+          <planeGeometry args={[100, 100]} />
+          <meshBasicMaterial transparent opacity={0} />
+        </mesh>
+      </group>
+
+      {/* Logo discs */}
       {discs.map((disc, index) => (
         <Disc
           key={`disc-${index}`}
@@ -238,6 +249,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           onClick={() => handleDiscClick(index)}
           isThrown={disc.active}
           camera={camera}
+          mousePos={mousePos}
         />
       ))}
     </>
@@ -399,6 +411,7 @@ function Disc({
   onClick,
   isThrown,
   camera,
+  mousePos,
 }: {
   position: Vector3
   rotation: Vector3
@@ -406,6 +419,7 @@ function Disc({
   onClick: () => void
   isThrown: boolean
   camera: any
+  mousePos: { x: number; y: number }
 }) {
   const meshRef = useRef<Mesh>(null)
 
@@ -414,8 +428,20 @@ function Disc({
 
   useFrame(() => {
     if (meshRef.current && !isThrown) {
+      // Make logo slightly follow mouse cursor to indicate throw angle
+      const followAmount = 0.3 // How much to follow the cursor (0 = none, 1 = full)
+      const targetX = position.x + mousePos.x * followAmount
+      const targetY = position.y + mousePos.y * followAmount
+
+      meshRef.current.position.x = targetX
+      meshRef.current.position.y = targetY
+
       // Make disc face camera when not thrown
       meshRef.current.lookAt(camera.position)
+
+      // Add slight tilt based on mouse position for visual feedback
+      meshRef.current.rotation.z = -mousePos.x * 0.2
+      meshRef.current.rotation.x += mousePos.y * 0.1
     } else if (meshRef.current && isThrown) {
       // Apply rotation when thrown
       meshRef.current.rotation.x = rotation.x
