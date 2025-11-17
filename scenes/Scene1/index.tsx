@@ -39,7 +39,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
   ])
   const lastThrowTimeRef = useRef(0)
 
-  // Set mobile detection on mount
+  // Detect mobile device on mount
   useEffect(() => {
     setIsMobile(isMobileDevice())
   }, [])
@@ -197,16 +197,6 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
 
   return (
     <>
-      {/* Black ground plane */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -3, 0]} receiveShadow>
-        <planeGeometry args={[100, 100]} />
-        <meshStandardMaterial
-          color="#000000"
-          roughness={0.9}
-          metalness={0.1}
-        />
-      </mesh>
-
       {/* Lighting */}
       <ambientLight intensity={0.05} />
       <directionalLight position={[5, 8, 5]} intensity={0.1} />
@@ -516,18 +506,9 @@ function Disc({
 
       // Scale animation: start small, grow to device-specific size
       const scaleProgress = Math.min(spawnProgress * 1.5, 1)
-      const baseScale = 0.3 + scaleProgress * (finalScale - 0.3)
-
-      // Apply click feedback animation (mobile only)
-      // Animate clickFeedback back to 0
-      if (clickFeedback > 0) {
-        setClickFeedback(Math.max(0, clickFeedback - delta * 8)) // Fast animation
-      }
-
-      // Apply feedback: reduce scale by 10% when clicking
-      const feedbackScale = 1 - (clickFeedback * 0.1)
-      const scale = baseScale * feedbackScale
-
+      // Responsive scaling: desktop -20% (0.8x), mobile -50% (0.5x)
+      const deviceScaleFactor = isMobile ? 0.5 : 0.8
+      const scale = (0.3 + scaleProgress * 0.7) * deviceScaleFactor
       meshRef.current.scale.set(scale, scale, 1)
 
       // Make disc face camera when not thrown
