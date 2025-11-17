@@ -98,25 +98,14 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       })
     )
 
-    // Remove inactive discs and respawn if needed
+    // Clean up old inactive discs (keep only active ones and one inactive for throwing)
     setDiscs((prevDiscs) => {
       const activeDiscs = prevDiscs.filter((disc) => disc.active)
-      const hasInactiveCenter = !prevDiscs.some(
-        (disc) => !disc.active && disc.position.length() < 0.1
-      )
+      const inactiveDiscs = prevDiscs.filter((disc) => !disc.active)
 
-      if (activeDiscs.length === 0 || (prevDiscs.some((disc) => !disc.active) && hasInactiveCenter)) {
-        return [
-          ...activeDiscs,
-          {
-            position: new Vector3(0, 0, 0),
-            velocity: new Vector3(0, 0, 0),
-            rotation: new Vector3(0, 0, 0),
-            rotationVelocity: new Vector3(0, 0, 0),
-            opacity: 1,
-            active: false,
-          },
-        ]
+      // Keep active discs and only one inactive disc at center
+      if (inactiveDiscs.length > 0) {
+        return [...activeDiscs, inactiveDiscs[0]]
       }
 
       return prevDiscs
@@ -138,8 +127,8 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
     throwDirection.applyQuaternion(camera.quaternion)
     throwDirection.normalize()
 
-    // Set velocity (speed: 18 units/sec)
-    const throwSpeed = 18
+    // Set velocity (speed: 28 units/sec) - fast like throwing a rock
+    const throwSpeed = 28
     const velocity = throwDirection.multiplyScalar(throwSpeed)
 
     // Stone-like throw: minimal rotation (just a slight tumble)
@@ -149,8 +138,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       Math.random() * 2 - 1  // minimal spin on z
     )
 
-    setDiscs((prevDiscs) =>
-      prevDiscs.map((d, i) =>
+    // Throw the disc and immediately spawn a new one
+    setDiscs((prevDiscs) => {
+      const updated = prevDiscs.map((d, i) =>
         i === discIndex
           ? {
               ...d,
@@ -160,7 +150,19 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
             }
           : d
       )
-    )
+      // Add a new inactive disc immediately for next throw
+      return [
+        ...updated,
+        {
+          position: new Vector3(0, 0, 0),
+          velocity: new Vector3(0, 0, 0),
+          rotation: new Vector3(0, 0, 0),
+          rotationVelocity: new Vector3(0, 0, 0),
+          opacity: 1,
+          active: false,
+        },
+      ]
+    })
   }
 
   return (
@@ -180,14 +182,14 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <directionalLight position={[5, 8, 5]} intensity={0.1} />
 
       {/* Fire glow lights - optimized for mobile */}
-      <pointLight position={[0, 0, -12]} intensity={6} color="#ff4400" distance={20} decay={2} />
-      <pointLight position={[0, 2, -12]} intensity={4} color="#ff8800" distance={18} decay={2} />
+      <pointLight position={[0, 0, -18]} intensity={6} color="#ff4400" distance={20} decay={2} />
+      <pointLight position={[0, 2, -18]} intensity={4} color="#ff8800" distance={18} decay={2} />
 
       {/* Fire in the distance - adaptive rendering based on device */}
       {/* Core flame - deep red/orange */}
       <Fire
         texture="/images/fire.png"
-        position={[0, -1, -12]}
+        position={[0, -1, -18]}
         scale={20.0}
         color="#ff3300"
         magnitude={0.15}
@@ -198,7 +200,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       {/* Mid flame - bright orange */}
       <Fire
         texture="/images/fire.png"
-        position={[0, -1, -12]}
+        position={[0, -1, -18]}
         scale={21.0}
         color="#ff6600"
         magnitude={0.12}
@@ -210,7 +212,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       {!isMobile && (
         <Fire
           texture="/images/fire.png"
-          position={[0, -1, -12]}
+          position={[0, -1, -18]}
           scale={22.0}
           color="#ffaa00"
           magnitude={0.1}
