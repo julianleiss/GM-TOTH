@@ -574,7 +574,7 @@ function Disc({
       >
         {/* Plane shape to display the logo image - larger size for better visibility */}
         <planeGeometry args={[12, 12]} />
-        <meshBasicMaterial
+        <meshStandardMaterial
           map={logoTexture}
           transparent
           opacity={opacity}
