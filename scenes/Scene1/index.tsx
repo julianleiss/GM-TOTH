@@ -39,6 +39,11 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
   ])
   const lastThrowTimeRef = useRef(0)
 
+  // Detect mobile device on mount
+  useEffect(() => {
+    setIsMobile(isMobileDevice())
+  }, [])
+
   // Track mouse position (normalized device coordinates)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
@@ -274,6 +279,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
           camera={camera}
           mousePos={mousePos}
           spawnTime={disc.spawnTime}
+          isMobile={isMobile}
         />
       ))}
     </>
@@ -437,6 +443,7 @@ function Disc({
   camera,
   mousePos,
   spawnTime,
+  isMobile,
 }: {
   position: Vector3
   rotation: Vector3
@@ -446,6 +453,7 @@ function Disc({
   camera: any
   mousePos: { x: number; y: number }
   spawnTime: number
+  isMobile: boolean
 }) {
   const meshRef = useRef<Mesh>(null)
 
@@ -504,7 +512,9 @@ function Disc({
 
       // Scale animation: start small, grow to normal size
       const scaleProgress = Math.min(spawnProgress * 1.5, 1)
-      const scale = 0.3 + scaleProgress * 0.7
+      // Responsive scaling: desktop -20% (0.8x), mobile -50% (0.5x)
+      const deviceScaleFactor = isMobile ? 0.5 : 0.8
+      const scale = (0.3 + scaleProgress * 0.7) * deviceScaleFactor
       meshRef.current.scale.set(scale, scale, 1)
 
       // Make disc face camera when not thrown
