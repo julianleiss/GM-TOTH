@@ -4,6 +4,7 @@ import {
   floatingSpheresScene,
   wireframeKnotScene,
   particleFieldScene,
+  frisbeeDiscThrowScene,
 } from '@/scenes'
 
 /**
@@ -12,6 +13,7 @@ import {
  */
 export function registerAllScenes() {
   sceneRegistry.registerMany([
+    frisbeeDiscThrowScene,
     rotatingCubeScene,
     floatingSpheresScene,
     wireframeKnotScene,

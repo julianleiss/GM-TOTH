@@ -6,7 +6,7 @@ import { registerAllScenes } from '@/lib/registerScenes'
 
 export default function Home() {
   const [isSelectorOpen, setIsSelectorOpen] = useState(false)
-  const [currentSceneId, setCurrentSceneId] = useState<string>('rotating-cube')
+  const [currentSceneId, setCurrentSceneId] = useState<string>('frisbee-disc-throw')
 
   // Register all scenes on mount
   useEffect(() => {
