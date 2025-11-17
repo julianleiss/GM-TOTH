@@ -31,13 +31,13 @@ export default function Home() {
         <img
           src="/images/BG-DESK-001.gif"
           alt="Background"
-          className="hidden md:block w-full h-full object-cover"
+          className="hidden md:block w-full h-full object-cover glitch-hover"
         />
         {/* Mobile Background - object-contain to show full GIF */}
         <img
           src="/images/BG-MOBILE-001.gif"
           alt="Background"
-          className="block md:hidden w-full h-full object-contain"
+          className="block md:hidden w-full h-full object-contain glitch-hover"
         />
       </div>
 
