@@ -8,6 +8,7 @@ import { sceneRegistry } from '@/lib/sceneRegistry'
 export default function Home() {
   const [currentSceneId, setCurrentSceneId] = useState<string>('frisbee-disc-throw')
   const [scenes, setScenes] = useState<Array<{ id: string; name: string }>>([])
+  const [isReady, setIsReady] = useState(false)
 
   // Register all scenes on mount
   useEffect(() => {
@@ -19,7 +20,17 @@ export default function Home() {
       name: scene.metadata.name,
     }))
     setScenes(allScenes)
+    setIsReady(true)
   }, [])
+
+  // Wait for scenes to be registered
+  if (!isReady) {
+    return (
+      <main className="w-screen h-screen bg-black flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </main>
+    )
+  }
 
   return (
     <main className="w-screen h-screen bg-black overflow-hidden">
