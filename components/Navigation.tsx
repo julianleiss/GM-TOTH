@@ -48,21 +48,21 @@ export default function Navigation() {
             <a
               href="#tour"
               className="text-white font-bold hover:opacity-70 transition-opacity"
-              style={{ fontSize: '14px', fontFamily: 'Arial, sans-serif' }}
+              style={{ fontSize: '14px', fontFamily: 'Lato Black, Arial, sans-serif' }}
             >
               TOUR
             </a>
             <a
               href="#newsletter"
               className="text-white font-bold hover:opacity-70 transition-opacity"
-              style={{ fontSize: '14px', fontFamily: 'Arial, sans-serif' }}
+              style={{ fontSize: '14px', fontFamily: 'Lato Black, Arial, sans-serif' }}
             >
               NEWSLETTER
             </a>
             <a
               href="#store"
               className="text-white font-bold hover:opacity-70 transition-opacity"
-              style={{ fontSize: '14px', fontFamily: 'Arial, sans-serif' }}
+              style={{ fontSize: '14px', fontFamily: 'Lato Black, Arial, sans-serif' }}
             >
               STORE
             </a>
@@ -71,7 +71,7 @@ export default function Navigation() {
           {/* Center - Artist Name */}
           <div
             className="absolute left-1/2 transform -translate-x-1/2 text-white font-bold"
-            style={{ fontSize: '14px', fontFamily: 'Arial, sans-serif' }}
+            style={{ fontSize: '14px', fontFamily: 'Lato Black, Arial, sans-serif' }}
           >
             CA7RIEL & PACO AMOROSO
           </div>
@@ -131,7 +131,7 @@ export default function Navigation() {
           {/* Left - Artist Name */}
           <div
             className="text-white font-bold"
-            style={{ fontSize: '12px', fontFamily: 'Arial, sans-serif' }}
+            style={{ fontSize: '12px', fontFamily: 'Lato Black, Arial, sans-serif' }}
           >
             CA7RIEL & PACO AMOROSO
           </div>
@@ -158,7 +158,7 @@ export default function Navigation() {
               <a
                 href="#tour"
                 className="text-white font-bold hover:opacity-70 transition-opacity"
-                style={{ fontSize: '14px', fontFamily: 'Arial, sans-serif' }}
+                style={{ fontSize: '14px', fontFamily: 'Lato Black, Arial, sans-serif' }}
                 onClick={() => setIsMenuOpen(false)}
               >
                 TOUR
@@ -166,7 +166,7 @@ export default function Navigation() {
               <a
                 href="#newsletter"
                 className="text-white font-bold hover:opacity-70 transition-opacity"
-                style={{ fontSize: '14px', fontFamily: 'Arial, sans-serif' }}
+                style={{ fontSize: '14px', fontFamily: 'Lato Black, Arial, sans-serif' }}
                 onClick={() => setIsMenuOpen(false)}
               >
                 NEWSLETTER
@@ -174,7 +174,7 @@ export default function Navigation() {
               <a
                 href="#store"
                 className="text-white font-bold hover:opacity-70 transition-opacity"
-                style={{ fontSize: '14px', fontFamily: 'Arial, sans-serif' }}
+                style={{ fontSize: '14px', fontFamily: 'Lato Black, Arial, sans-serif' }}
                 onClick={() => setIsMenuOpen(false)}
               >
                 STORE

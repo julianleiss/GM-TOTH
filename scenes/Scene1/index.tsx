@@ -613,10 +613,6 @@ function Disc({
         onPointerDown={(e) => {
           e.stopPropagation()
           if (!isThrown) {
-            // Trigger click feedback on mobile
-            if (isMobile) {
-              setClickFeedback(1)
-            }
             // Trigger click immediately on pointer down for better mobile responsiveness
             onClick()
           }
