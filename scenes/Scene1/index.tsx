@@ -39,11 +39,14 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
   // Track mouse position (normalized device coordinates)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
-  // Handle mouse movement
+  // Handle mouse/touch movement
   const handleMouseMove = (event: any) => {
-    // Convert to normalized device coordinates (-1 to +1)
-    const x = (event.clientX / size.width) * 2 - 1
-    const y = -(event.clientY / size.height) * 2 + 1
+    // R3F provides pointer position - works for both mouse and touch
+    // Use clientX/clientY for compatibility, converting to NDC
+    const clientX = event.clientX ?? (event.touches?.[0]?.clientX || 0)
+    const clientY = event.clientY ?? (event.touches?.[0]?.clientY || 0)
+    const x = (clientX / size.width) * 2 - 1
+    const y = -(clientY / size.height) * 2 + 1
     setMousePos({ x, y })
   }
 
@@ -177,14 +180,14 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       <directionalLight position={[5, 8, 5]} intensity={0.1} />
 
       {/* Fire glow lights - optimized for mobile */}
-      <pointLight position={[0, 0, -8]} intensity={6} color="#ff4400" distance={20} decay={2} />
-      <pointLight position={[0, 2, -8]} intensity={4} color="#ff8800" distance={18} decay={2} />
+      <pointLight position={[0, 0, -12]} intensity={6} color="#ff4400" distance={20} decay={2} />
+      <pointLight position={[0, 2, -12]} intensity={4} color="#ff8800" distance={18} decay={2} />
 
       {/* Fire in the distance - adaptive rendering based on device */}
       {/* Core flame - deep red/orange */}
       <Fire
         texture="/images/fire.png"
-        position={[0, -1, -8]}
+        position={[0, -1, -12]}
         scale={20.0}
         color="#ff3300"
         magnitude={0.15}
@@ -195,7 +198,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       {/* Mid flame - bright orange */}
       <Fire
         texture="/images/fire.png"
-        position={[0, -1, -8]}
+        position={[0, -1, -12]}
         scale={21.0}
         color="#ff6600"
         magnitude={0.12}
@@ -207,7 +210,7 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
       {!isMobile && (
         <Fire
           texture="/images/fire.png"
-          position={[0, -1, -8]}
+          position={[0, -1, -12]}
           scale={22.0}
           color="#ffaa00"
           magnitude={0.1}
@@ -221,8 +224,22 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
 
       {/* Mouse tracking group */}
       <group onPointerMove={handleMouseMove}>
-        {/* Invisible plane to capture mouse events */}
-        <mesh position={[0, 0, 0]} visible={false}>
+        {/* Invisible plane to capture mouse events and clicks */}
+        <mesh
+          position={[0, 0, 0]}
+          visible={false}
+          onClick={(e) => {
+            e.stopPropagation()
+            // Find first inactive disc and throw it
+            const inactiveDiscIndex = discs.findIndex(d => !d.active)
+            if (inactiveDiscIndex !== -1) {
+              handleDiscClick(inactiveDiscIndex)
+            }
+          }}
+          onPointerDown={(e) => {
+            e.stopPropagation()
+          }}
+        >
           <planeGeometry args={[100, 100]} />
           <meshBasicMaterial transparent opacity={0} />
         </mesh>
@@ -296,7 +313,7 @@ function SmokeParticles({ isActive, isMobile }: { isActive?: boolean; isMobile?:
       rotationSpeed: number
     }[] = []
 
-    const geometry = new PlaneGeometry(5, 5)
+    const geometry = new PlaneGeometry(2.5, 2.5)
     const particleCount = isMobile ? 10 : 15 // Further reduced on mobile
 
     for (let i = 0; i < particleCount; i++) {
@@ -321,7 +338,7 @@ function SmokeParticles({ isActive, isMobile }: { isActive?: boolean; isMobile?:
 
       // Random initial rotation
       mesh.rotation.z = Math.random() * Math.PI * 2
-      const initialSize = 0.3 + Math.random() * 1.5
+      const initialSize = 0.15 + Math.random() * 0.75
       mesh.scale.set(initialSize, initialSize, 1)
 
       particles.push({
@@ -428,9 +445,9 @@ function Disc({
       // Make disc face camera when not thrown
       meshRef.current.lookAt(camera.position)
 
-      // Add slight tilt based on mouse position for visual feedback
-      meshRef.current.rotation.z = -mousePos.x * 0.2
-      meshRef.current.rotation.x += mousePos.y * 0.1
+      // Add stronger tilt based on mouse position for visual feedback
+      meshRef.current.rotation.z = -mousePos.x * 0.5
+      meshRef.current.rotation.x += mousePos.y * 0.3
     } else if (meshRef.current && isThrown) {
       // Apply rotation when thrown
       meshRef.current.rotation.x = rotation.x
@@ -452,7 +469,7 @@ function Disc({
       }}
     >
       {/* Plane shape to display the logo image - larger size for better visibility */}
-      <planeGeometry args={[9, 9]} />
+      <planeGeometry args={[12, 12]} />
       <meshBasicMaterial
         map={logoTexture}
         transparent
