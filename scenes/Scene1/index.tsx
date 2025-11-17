@@ -3,7 +3,7 @@
 import { useRef, useState, useMemo } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Mesh, Vector3, AdditiveBlending, Points, BufferAttribute, CanvasTexture, PlaneGeometry, MeshBasicMaterial, DoubleSide } from 'three'
-import { OrbitControls } from '@react-three/drei'
+import { OrbitControls, useTexture } from '@react-three/drei'
 import { Scene, SceneProps } from '@/lib/types'
 import { Fire } from '@wolffo/three-fire/react'
 
@@ -556,7 +556,7 @@ function SmokeParticles({ isActive }: { isActive?: boolean }) {
   return <group ref={groupRef} position={[0, 0, -2]} />
 }
 
-// Disc component
+// Disc component - now displays GM logo
 function Disc({
   position,
   rotation,
@@ -573,6 +573,9 @@ function Disc({
   camera: any
 }) {
   const meshRef = useRef<Mesh>(null)
+
+  // Load the GM logo texture
+  const logoTexture = useTexture('/images/GM_LOGO.png')
 
   useFrame(() => {
     if (meshRef.current && !isThrown) {
@@ -598,14 +601,13 @@ function Disc({
         e.stopPropagation()
       }}
     >
-      {/* Disc shape - cylinder with small height */}
-      <cylinderGeometry args={[1, 1, 0.1, 32]} />
-      <meshStandardMaterial
-        color="#ff3333"
-        roughness={0.3}
-        metalness={0.6}
+      {/* Plane shape to display the logo image */}
+      <planeGeometry args={[2, 2]} />
+      <meshBasicMaterial
+        map={logoTexture}
         transparent
         opacity={opacity}
+        side={DoubleSide}
       />
     </mesh>
   )
