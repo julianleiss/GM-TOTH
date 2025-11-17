@@ -47,6 +47,11 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
   ])
   const [lastThrowTime, setLastThrowTime] = useState(0)
 
+  // Initialize mobile detection on mount
+  useEffect(() => {
+    setIsMobile(isMobileDevice())
+  }, [])
+
   // Track mouse position (normalized device coordinates)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
@@ -478,8 +483,8 @@ function Disc({
         ref={meshRef}
         position={[0, 0, 0]}
       >
-        {/* Plane shape to display the logo image - 3x bigger */}
-        <planeGeometry args={[6, 6]} />
+        {/* Plane shape to display the logo image */}
+        <planeGeometry args={[4, 4]} />
         <meshBasicMaterial
           map={logoTexture}
           transparent
@@ -503,7 +508,7 @@ export const frisbeeDiscThrowScene: Scene = {
   config: {
     camera: {
       position: [0, 2, 8],
-      fov: 75,
+      fov: 90,
     },
     lighting: 'studio',
     performance: {
