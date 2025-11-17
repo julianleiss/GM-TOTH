@@ -500,7 +500,6 @@ function Disc({
   isMobile: boolean
 }) {
   const meshRef = useRef<Mesh>(null)
-  const [clickFeedback, setClickFeedback] = useState(0) // For mobile click animation
 
   // Load the GM logo texture
   const logoTexture = useTexture('/images/GM_LOGO.png')
@@ -555,10 +554,6 @@ function Disc({
       meshRef.current.position.y = clampedY + bounceOffset
       meshRef.current.position.z = 1 // Keep logo slightly forward to prevent clipping
 
-      // Determine final scale based on device
-      // Desktop: 30% smaller (0.7), Mobile: 50% smaller (0.5)
-      const finalScale = isMobile ? 0.5 : 0.7
-
       // Scale animation: start small, grow to device-specific size
       const scaleProgress = Math.min(spawnProgress * 1.5, 1)
       // Responsive scaling: desktop -20% (0.8x), mobile -50% (0.5x)
@@ -606,10 +601,6 @@ function Disc({
         onPointerDown={(e) => {
           e.stopPropagation()
           if (!isThrown) {
-            // Trigger click feedback on mobile
-            if (isMobile) {
-              setClickFeedback(1)
-            }
             // Trigger click immediately on pointer down for better mobile responsiveness
             onClick()
           }
