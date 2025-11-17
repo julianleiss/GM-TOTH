@@ -1,8 +1,8 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useMemo } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { Mesh, Vector3 } from 'three'
+import { Mesh, Vector3, Points, BufferGeometry, PointsMaterial, BufferAttribute, AdditiveBlending } from 'three'
 import { OrbitControls } from '@react-three/drei'
 import { Scene, SceneProps } from '@/lib/types'
 import { Fire } from '@wolffo/three-fire/react'
@@ -253,47 +253,8 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         gain={0.62}
       />
 
-      {/* Smoke layers - dark gray */}
-      <Fire
-        texture="/images/fire.png"
-        position={[0, 0.5, -8]}
-        scale={3.5}
-        color="#222222"
-        magnitude={0.8}
-        lacunarity={0.9}
-        gain={0.35}
-      />
-
-      <Fire
-        texture="/images/fire.png"
-        position={[0, 1.5, -8]}
-        scale={4}
-        color="#333333"
-        magnitude={0.7}
-        lacunarity={0.8}
-        gain={0.3}
-      />
-
-      <Fire
-        texture="/images/fire.png"
-        position={[0, 2.5, -8]}
-        scale={4.5}
-        color="#444444"
-        magnitude={0.6}
-        lacunarity={0.7}
-        gain={0.25}
-      />
-
-      {/* Light smoke - rising high */}
-      <Fire
-        texture="/images/fire.png"
-        position={[0, 3.5, -8]}
-        scale={5}
-        color="#555555"
-        magnitude={0.5}
-        lacunarity={0.6}
-        gain={0.2}
-      />
+      {/* Realistic smoke particle system */}
+      <SmokeParticles isActive={isActive} />
 
       {/* Frisbee discs */}
       {discs.map((disc, index) => (
@@ -308,6 +269,111 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
         />
       ))}
     </>
+  )
+}
+
+// Smoke particle system component
+function SmokeParticles({ isActive }: { isActive?: boolean }) {
+  const smokeRef = useRef<Points>(null)
+
+  const { positions, velocities, lifetimes, sizes, opacities } = useMemo(() => {
+    const particleCount = 800
+    const positions = new Float32Array(particleCount * 3)
+    const velocities = new Float32Array(particleCount * 3)
+    const lifetimes = new Float32Array(particleCount)
+    const sizes = new Float32Array(particleCount)
+    const opacities = new Float32Array(particleCount)
+
+    for (let i = 0; i < particleCount; i++) {
+      // Start particles at fire location with some spread
+      const angle = Math.random() * Math.PI * 2
+      const radius = Math.random() * 2
+
+      positions[i * 3] = Math.cos(angle) * radius
+      positions[i * 3 + 1] = -1 + Math.random() * 2 // Start at fire base
+      positions[i * 3 + 2] = -8 + Math.sin(angle) * radius // At fire Z position
+
+      // Slow upward drift with lateral movement
+      velocities[i * 3] = (Math.random() - 0.5) * 0.3
+      velocities[i * 3 + 1] = 0.5 + Math.random() * 0.5 // Upward
+      velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.3
+
+      lifetimes[i] = Math.random()
+      sizes[i] = 0.3 + Math.random() * 0.8
+      opacities[i] = 0.1 + Math.random() * 0.3
+    }
+
+    return { positions, velocities, lifetimes, sizes, opacities }
+  }, [])
+
+  useFrame((state, delta) => {
+    if (!isActive || !smokeRef.current) return
+
+    const positions = smokeRef.current.geometry.attributes.position.array as Float32Array
+    const particleCount = positions.length / 3
+
+    for (let i = 0; i < particleCount; i++) {
+      const i3 = i * 3
+
+      // Update lifetime
+      lifetimes[i] += delta * 0.2
+
+      if (lifetimes[i] > 1.0) {
+        // Reset particle at fire base
+        lifetimes[i] = 0
+        const angle = Math.random() * Math.PI * 2
+        const radius = Math.random() * 2
+
+        positions[i3] = Math.cos(angle) * radius
+        positions[i3 + 1] = -1 + Math.random() * 2
+        positions[i3 + 2] = -8 + Math.sin(angle) * radius
+
+        velocities[i3] = (Math.random() - 0.5) * 0.3
+        velocities[i3 + 1] = 0.5 + Math.random() * 0.5
+        velocities[i3 + 2] = (Math.random() - 0.5) * 0.3
+
+        sizes[i] = 0.3 + Math.random() * 0.8
+      } else {
+        // Move particle
+        positions[i3] += velocities[i3] * delta
+        positions[i3 + 1] += velocities[i3 + 1] * delta
+        positions[i3 + 2] += velocities[i3 + 2] * delta
+
+        // Add turbulence
+        positions[i3] += Math.sin(state.clock.elapsedTime * 0.5 + i * 0.1) * delta * 0.2
+        positions[i3 + 2] += Math.cos(state.clock.elapsedTime * 0.5 + i * 0.1) * delta * 0.2
+
+        // Expand as it rises
+        sizes[i] += delta * 0.4
+
+        // Slow down vertical velocity
+        velocities[i3 + 1] *= 0.99
+      }
+    }
+
+    smokeRef.current.geometry.attributes.position.needsUpdate = true
+  })
+
+  return (
+    <points ref={smokeRef}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          count={positions.length / 3}
+          array={positions}
+          itemSize={3}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        size={2}
+        color="#666666"
+        transparent
+        opacity={0.15}
+        blending={AdditiveBlending}
+        depthWrite={false}
+        sizeAttenuation={true}
+      />
+    </points>
   )
 }
 
