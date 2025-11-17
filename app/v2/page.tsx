@@ -26,11 +26,10 @@ export default function HomeV2() {
 
       {/* Site Under Destruction Text */}
       <div
-        className="absolute left-0 right-0 text-center z-20"
+        className="absolute left-0 right-0 text-center z-20 px-4 blinking-text"
         style={{
-          top: '320px',
+          top: '200px',
           fontFamily: 'Dunbar Tall, Arial, sans-serif',
-          fontSize: '48px',
           color: '#FF0000',
           fontWeight: 900,
           textTransform: 'uppercase',
@@ -39,6 +38,37 @@ export default function HomeV2() {
       >
         SITE UNDER DESTRUCTION
       </div>
+
+      {/* CSS for blinking animation and responsive text */}
+      <style jsx>{`
+        .blinking-text {
+          animation: blink 1s infinite;
+          font-size: 24px;
+        }
+
+        @keyframes blink {
+          0%, 49% {
+            opacity: 1;
+          }
+          50%, 100% {
+            opacity: 0;
+          }
+        }
+
+        /* Tablet */
+        @media (min-width: 640px) {
+          .blinking-text {
+            font-size: 36px;
+          }
+        }
+
+        /* Desktop */
+        @media (min-width: 1024px) {
+          .blinking-text {
+            font-size: 48px;
+          }
+        }
+      `}</style>
     </main>
   )
 }
