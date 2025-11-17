@@ -1,8 +1,8 @@
 'use client'
 
-import { useRef, useState, useMemo } from 'react'
+import { useRef, useState, useMemo, useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { Mesh, Vector3, Color, AdditiveBlending, Points, BufferGeometry, PointsMaterial, BufferAttribute } from 'three'
+import { Mesh, Vector3, Color, AdditiveBlending, Points, BufferGeometry, PointsMaterial, BufferAttribute, CanvasTexture, Sprite, SpriteMaterial, NormalBlending } from 'three'
 import { OrbitControls } from '@react-three/drei'
 import { Scene, SceneProps } from '@/lib/types'
 
@@ -161,6 +161,9 @@ function FrisbeeDiscThrowComponent({ isActive }: SceneProps) {
 
       {/* Fire effect */}
       <Fire isActive={isActive} />
+
+      {/* Smoke effect */}
+      <SmokeParticles isActive={isActive} />
 
       {/* Frisbee discs */}
       {discs.map((disc, index) => (
@@ -363,6 +366,189 @@ function Fire({ isActive }: { isActive?: boolean }) {
       <pointLight position={[0, -1, 0]} intensity={1.5} color="#ff2200" distance={6} />
     </group>
   )
+}
+
+// Generate procedural smoke texture
+function generateSmokeTexture(): CanvasTexture {
+  const canvas = document.createElement('canvas')
+  canvas.width = 256
+  canvas.height = 256
+
+  const ctx = canvas.getContext('2d')!
+  const centerX = canvas.width / 2
+  const centerY = canvas.height / 2
+
+  // Create radial gradient for smoke puff
+  const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, canvas.width / 2)
+  gradient.addColorStop(0, 'rgba(255, 255, 255, 1)')
+  gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)')
+  gradient.addColorStop(0.4, 'rgba(200, 200, 200, 0.4)')
+  gradient.addColorStop(0.7, 'rgba(128, 128, 128, 0.1)')
+  gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
+
+  ctx.fillStyle = gradient
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  // Add some noise/texture
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+  const data = imageData.data
+
+  for (let i = 0; i < data.length; i += 4) {
+    const noise = Math.random() * 30 - 15
+    data[i] = Math.max(0, Math.min(255, data[i] + noise))
+    data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise))
+    data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise))
+  }
+
+  ctx.putImageData(imageData, 0, 0)
+
+  const texture = new CanvasTexture(canvas)
+  return texture
+}
+
+// Realistic Smoke Particles Component
+function SmokeParticles({ isActive }: { isActive?: boolean }) {
+  const groupRef = useRef<any>(null)
+  const smokeTexture = useMemo(() => generateSmokeTexture(), [])
+
+  // Particle data
+  const particleData = useMemo(() => {
+    const count = 50 // Fewer but larger smoke sprites
+    const particles: {
+      sprite: Sprite
+      velocity: Vector3
+      rotation: number
+      rotationSpeed: number
+      lifetime: number
+      maxLifetime: number
+      initialSize: number
+    }[] = []
+
+    for (let i = 0; i < count; i++) {
+      const material = new SpriteMaterial({
+        map: smokeTexture,
+        transparent: true,
+        opacity: 0,
+        blending: NormalBlending,
+        depthWrite: false,
+        color: 0x888888,
+      })
+
+      const sprite = new Sprite(material)
+
+      // Start at fire base with some spread
+      const angle = Math.random() * Math.PI * 2
+      const radius = Math.random() * 0.8
+      sprite.position.set(
+        Math.cos(angle) * radius,
+        -1.5,
+        Math.sin(angle) * radius
+      )
+
+      const initialSize = 1.5 + Math.random() * 1.5
+      sprite.scale.set(initialSize, initialSize, 1)
+
+      particles.push({
+        sprite,
+        velocity: new Vector3(
+          (Math.random() - 0.5) * 0.3, // Gentle horizontal drift
+          0.5 + Math.random() * 0.5,    // Slow upward movement
+          (Math.random() - 0.5) * 0.3
+        ),
+        rotation: Math.random() * Math.PI * 2,
+        rotationSpeed: (Math.random() - 0.5) * 0.5, // Slow rotation
+        lifetime: Math.random() * 5, // Stagger start times
+        maxLifetime: 5 + Math.random() * 3,
+        initialSize,
+      })
+    }
+
+    return particles
+  }, [smokeTexture])
+
+  // Add sprites to group
+  useEffect(() => {
+    if (groupRef.current) {
+      particleData.forEach(p => groupRef.current.add(p.sprite))
+    }
+
+    return () => {
+      // Cleanup sprites on unmount
+      if (groupRef.current) {
+        particleData.forEach(p => {
+          groupRef.current.remove(p.sprite)
+          p.sprite.material.dispose()
+        })
+      }
+    }
+  }, [particleData])
+
+  // Animate smoke particles
+  useFrame((state, delta) => {
+    if (!isActive) return
+
+    particleData.forEach((particle) => {
+      // Update lifetime
+      particle.lifetime += delta
+
+      if (particle.lifetime > particle.maxLifetime) {
+        // Reset particle
+        particle.lifetime = 0
+        const angle = Math.random() * Math.PI * 2
+        const radius = Math.random() * 0.8
+        particle.sprite.position.set(
+          Math.cos(angle) * radius,
+          -1.5,
+          Math.sin(angle) * radius
+        )
+        particle.velocity.set(
+          (Math.random() - 0.5) * 0.3,
+          0.5 + Math.random() * 0.5,
+          (Math.random() - 0.5) * 0.3
+        )
+        particle.rotationSpeed = (Math.random() - 0.5) * 0.5
+      } else {
+        // Update position
+        particle.sprite.position.x += particle.velocity.x * delta
+        particle.sprite.position.y += particle.velocity.y * delta
+        particle.sprite.position.z += particle.velocity.z * delta
+
+        // Add turbulence
+        const turbulence = Math.sin(state.clock.elapsedTime * 0.5 + particle.sprite.position.y) * 0.3
+        particle.sprite.position.x += turbulence * delta
+        particle.sprite.position.z += Math.cos(state.clock.elapsedTime * 0.5 + particle.sprite.position.y) * 0.3 * delta
+
+        // Update rotation
+        particle.rotation += particle.rotationSpeed * delta
+        particle.sprite.material.rotation = particle.rotation
+
+        // Size expansion - smoke expands as it rises
+        const lifetimeRatio = particle.lifetime / particle.maxLifetime
+        const scale = particle.initialSize * (1 + lifetimeRatio * 2) // Grows to 3x initial size
+        particle.sprite.scale.set(scale, scale, 1)
+
+        // Opacity fade - fade in quickly, fade out slowly
+        let opacity = 0
+        if (lifetimeRatio < 0.1) {
+          // Fade in
+          opacity = lifetimeRatio / 0.1 * 0.4
+        } else if (lifetimeRatio < 0.7) {
+          // Stay visible
+          opacity = 0.4
+        } else {
+          // Fade out
+          opacity = 0.4 * (1 - (lifetimeRatio - 0.7) / 0.3)
+        }
+
+        ;(particle.sprite.material as SpriteMaterial).opacity = opacity
+
+        // Slow down as it rises
+        particle.velocity.multiplyScalar(0.98)
+      }
+    })
+  })
+
+  return <group ref={groupRef} position={[0, 0, -2]} />
 }
 
 // Disc component
