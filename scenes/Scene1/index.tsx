@@ -616,7 +616,7 @@ export const frisbeeDiscThrowScene: Scene = {
   metadata: {
     id: 'frisbee-disc-throw',
     name: '01',
-    description: 'Throw the red disc toward the distant fire burning in the void',
+    description: 'Throw the red disc toward the massive fire burning in the void',
     tags: ['interactive', 'physics', 'game'],
   },
   component: FrisbeeDiscThrowComponent,
