@@ -26,7 +26,7 @@ export default function HomeV2() {
 
       {/* Site Under Destruction Text */}
       <div
-        className="absolute left-0 right-0 text-center z-20 px-4 color-cycle-text md:static"
+        className="absolute left-0 right-0 text-center z-20 px-4 color-cycle-text"
         style={{
           fontFamily: 'Dunbar Tall, Arial, sans-serif',
           fontWeight: 900,
@@ -75,6 +75,8 @@ export default function HomeV2() {
         @media (min-width: 1024px) {
           .color-cycle-text {
             font-size: 48px;
+            top: 200px;
+            transform: none;
           }
         }
       `}</style>
