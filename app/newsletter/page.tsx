@@ -27,13 +27,14 @@ export default function Newsletter() {
 
       {/* Laylo Newsletter Embed - Centered */}
       <Script src="https://embed.laylo.com/laylo-sdk.js" strategy="afterInteractive" />
-      <div className="absolute inset-0 flex items-center justify-center z-20 px-4 overflow-y-auto">
+      <div className="absolute inset-0 flex items-center justify-center z-20 px-4 overflow-y-auto pt-20">
         <div style={{ maxWidth: '1000px', margin: 'auto', width: '100%' }}>
           <iframe
             id="laylo-drop-xN8Ke"
             frameBorder="0"
             scrolling="no"
-            allow="web-share"
+            allow="web-share; encrypted-media"
+            allowTransparency={true}
             style={{
               width: '100%',
               height: '700px',
