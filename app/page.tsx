@@ -75,7 +75,7 @@ export default function HomeV2() {
         @media (min-width: 1024px) {
           .color-cycle-text {
             font-size: 48px;
-            top: 200px;
+            top: 160px;
             transform: none;
           }
         }
