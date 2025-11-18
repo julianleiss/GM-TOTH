@@ -53,7 +53,7 @@ export default function Navigation() {
               TOUR
             </a>
             <a
-              href="#newsletter"
+              href="/newsletter"
               className="text-white font-bold hover:text-[#ff0000] transition-colors"
               style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
             >
@@ -164,7 +164,7 @@ export default function Navigation() {
                 TOUR
               </a>
               <a
-                href="#newsletter"
+                href="/newsletter"
                 className="text-white font-bold hover:text-black transition-colors text-center"
                 style={{ fontSize: '28px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
                 onClick={() => setIsMenuOpen(false)}
