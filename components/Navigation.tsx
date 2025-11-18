@@ -54,7 +54,7 @@ export default function Navigation() {
               NEWSLETTER
             </a>
             <div
-              className="relative pt-2"
+              className="relative"
               onMouseEnter={() => setIsStoreDropdownOpen(true)}
               onMouseLeave={() => setIsStoreDropdownOpen(false)}
             >
