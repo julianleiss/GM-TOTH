@@ -76,7 +76,7 @@ export default function Newsletter() {
           font-weight: 500;
           text-transform: uppercase;
           letter-spacing: 0.05em;
-          background: transparent;
+          background: #000000;
           border: 2px solid #FFFFFF;
           color: #FFFFFF;
           outline: none;
@@ -89,12 +89,12 @@ export default function Newsletter() {
 
         .newsletter-input:hover {
           border-color: rgba(255, 255, 255, 0.8);
-          background: rgba(255, 255, 255, 0.05);
+          background: #000000;
         }
 
         .newsletter-input:focus {
           border-color: #FFFFFF;
-          background: rgba(255, 255, 255, 0.1);
+          background: #000000;
         }
 
         .newsletter-input:disabled {
