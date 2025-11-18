@@ -11,13 +11,13 @@ export default function HomeV2() {
         <img
           src="/images/BG-DESK-003.gif"
           alt="Background"
-          className="hidden md:block w-full h-full object-cover glitch-hover"
+          className="hidden md:block w-full h-full object-cover"
         />
         {/* Mobile Background - object-contain to show full GIF */}
         <img
           src="/images/BG-MOBILE-001.gif"
           alt="Background"
-          className="block md:hidden w-full h-full object-contain glitch-hover"
+          className="block md:hidden w-full h-full object-contain"
         />
       </div>
 
@@ -26,7 +26,7 @@ export default function HomeV2() {
 
       {/* Site Under Destruction Text */}
       <div
-        className="absolute left-0 right-0 text-center z-20 px-4 color-cycle-text glitch-text-hover"
+        className="absolute left-0 right-0 text-center z-20 px-4 color-cycle-text"
         style={{
           top: '200px',
           fontFamily: 'Dunbar Tall, Arial, sans-serif',
