@@ -79,7 +79,7 @@ export default function Navigation() {
           {/* Right - Social Icons */}
           <div className="flex items-center gap-4">
             <a
-              href="https://open.spotify.com"
+              href="https://open.spotify.com/artist/6I8TDGeUmmLom8auKPzMdX"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white hover:text-[#ff0000] transition-colors"
@@ -88,7 +88,7 @@ export default function Navigation() {
               <SpotifyIcon />
             </a>
             <a
-              href="https://instagram.com"
+              href="https://www.instagram.com/ca7rielypacoamoroso"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white hover:text-[#ff0000] transition-colors"
@@ -97,7 +97,7 @@ export default function Navigation() {
               <InstagramIcon />
             </a>
             <a
-              href="https://youtube.com"
+              href="https://www.youtube.com/@CA7RIELyPacoAmoroso"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white hover:text-[#ff0000] transition-colors"
@@ -106,7 +106,7 @@ export default function Navigation() {
               <YouTubeIcon />
             </a>
             <a
-              href="https://tiktok.com"
+              href="https://www.tiktok.com/@ca7rielypacoamoroso"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white hover:text-[#ff0000] transition-colors"
@@ -115,7 +115,7 @@ export default function Navigation() {
               <TikTokIcon />
             </a>
             <a
-              href="https://x.com"
+              href="https://x.com/ca7rielypaco"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white hover:text-[#ff0000] transition-colors"
@@ -183,7 +183,7 @@ export default function Navigation() {
               {/* Social Icons */}
               <div className="flex items-center justify-center gap-4 pt-4 border-t border-white/20 w-full">
                 <a
-                  href="https://open.spotify.com"
+                  href="https://open.spotify.com/artist/6I8TDGeUmmLom8auKPzMdX"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-white hover:text-black transition-colors"
@@ -192,7 +192,7 @@ export default function Navigation() {
                   <SpotifyIcon />
                 </a>
                 <a
-                  href="https://instagram.com"
+                  href="https://www.instagram.com/ca7rielypacoamoroso"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-white hover:text-black transition-colors"
@@ -201,7 +201,7 @@ export default function Navigation() {
                   <InstagramIcon />
                 </a>
                 <a
-                  href="https://youtube.com"
+                  href="https://www.youtube.com/@CA7RIELyPacoAmoroso"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-white hover:text-black transition-colors"
@@ -210,7 +210,7 @@ export default function Navigation() {
                   <YouTubeIcon />
                 </a>
                 <a
-                  href="https://tiktok.com"
+                  href="https://www.tiktok.com/@ca7rielypacoamoroso"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-white hover:text-black transition-colors"
@@ -219,7 +219,7 @@ export default function Navigation() {
                   <TikTokIcon />
                 </a>
                 <a
-                  href="https://x.com"
+                  href="https://x.com/ca7rielypaco"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-white hover:text-black transition-colors"
