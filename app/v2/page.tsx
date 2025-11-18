@@ -13,11 +13,11 @@ export default function HomeV2() {
           alt="Background"
           className="hidden md:block w-full h-full object-cover"
         />
-        {/* Mobile Background - object-contain to show full GIF */}
+        {/* Mobile Background - object-cover to fill screen */}
         <img
           src="/images/BG-MOBILE-001.gif"
           alt="Background"
-          className="block md:hidden w-full h-full object-contain"
+          className="block md:hidden w-full h-full object-cover"
         />
       </div>
 
@@ -26,9 +26,8 @@ export default function HomeV2() {
 
       {/* Site Under Destruction Text */}
       <div
-        className="absolute left-0 right-0 text-center z-20 px-4 color-cycle-text"
+        className="absolute left-0 right-0 text-center z-20 px-4 color-cycle-text md:static"
         style={{
-          top: '200px',
           fontFamily: 'Dunbar Tall, Arial, sans-serif',
           fontWeight: 900,
           textTransform: 'uppercase',
@@ -43,6 +42,8 @@ export default function HomeV2() {
         .color-cycle-text {
           animation: colorCycle 4s infinite;
           font-size: 24px;
+          top: 50%;
+          transform: translateY(-50%);
         }
 
         @keyframes colorCycle {
