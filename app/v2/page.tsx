@@ -39,6 +39,7 @@ export default function HomeV2() {
 
       {/* CSS for color cycle animation and responsive text */}
       <style jsx>{`
+        /* Mobile - Centered vertically */
         .color-cycle-text {
           animation: colorCycle 4s infinite;
           font-size: 24px;
@@ -64,17 +65,21 @@ export default function HomeV2() {
           }
         }
 
-        /* Tablet */
+        /* Tablet - 200px from top */
         @media (min-width: 640px) {
           .color-cycle-text {
             font-size: 36px;
+            top: 200px;
+            transform: none;
           }
         }
 
-        /* Desktop */
+        /* Desktop - 200px from top */
         @media (min-width: 1024px) {
           .color-cycle-text {
             font-size: 48px;
+            top: 200px;
+            transform: none;
           }
         }
       `}</style>
