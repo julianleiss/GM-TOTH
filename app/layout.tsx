@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "GM - Generative Micro-scenes",
-  description: "Interactive 3D generative micro-scenes powered by Three.js and Next.js",
+  title: "CA7RIEL & PACO AMOROSO",
+  description: "TOP OF THE HILLS",
 };
 
 export default function RootLayout({
