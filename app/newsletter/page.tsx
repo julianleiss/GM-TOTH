@@ -89,7 +89,7 @@ export default function Newsletter() {
 
         .newsletter-input:hover {
           border-color: rgba(255, 255, 255, 0.8);
-          background: rgba(255, 255, 255, 0.05);
+          background: #000000;
         }
 
         .newsletter-input:focus {
