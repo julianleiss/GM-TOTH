@@ -46,13 +46,6 @@ export default function Navigation() {
           {/* Left - Links */}
           <div className="flex items-center gap-4">
             <a
-              href="#tour"
-              className="text-white font-bold hover:text-[#ff0000] transition-colors"
-              style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
-            >
-              TOUR
-            </a>
-            <a
               href="#newsletter"
               className="text-white font-bold hover:text-[#ff0000] transition-colors"
               style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
@@ -155,14 +148,6 @@ export default function Navigation() {
           <div className="md:hidden mt-4 pb-4 animate-in slide-in-from-top bg-[#ff0000] rounded-lg p-6">
             <div className="flex flex-col gap-8 items-center">
               {/* Navigation Links */}
-              <a
-                href="#tour"
-                className="text-white font-bold hover:text-black transition-colors text-center"
-                style={{ fontSize: '28px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                TOUR
-              </a>
               <a
                 href="#newsletter"
                 className="text-white font-bold hover:text-black transition-colors text-center"
