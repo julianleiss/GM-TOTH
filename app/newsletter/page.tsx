@@ -28,7 +28,7 @@ export default function Newsletter() {
       <div className="fixed inset-0 w-full h-full z-0">
         {/* Desktop & Tablet Background */}
         <img
-          src="/images/BG-DESK-003.gif"
+          src="/images/BG-DESK-NS_001.gif"
           alt="Background"
           className="hidden md:block w-full h-full object-cover"
         />
