@@ -66,18 +66,21 @@ export default function Navigation() {
               onMouseLeave={() => setIsStoreDropdownOpen(false)}
             >
               <button
-                className="text-white font-bold hover:text-[#ff0000] transition-colors"
+                className="text-white font-bold hover:text-[#ff0000] transition-colors flex items-center gap-1"
                 style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
               >
                 STORE
+                <svg width="10" height="6" viewBox="0 0 10 6" fill="currentColor">
+                  <path d="M5 6L0 0h10L5 6z"/>
+                </svg>
               </button>
               {isStoreDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 bg-black border-2 border-white rounded-lg overflow-hidden min-w-[200px] z-50">
+                <div className="absolute top-full left-0 mt-2 flex flex-col gap-2">
                   <a
                     href="https://tienda.ca7rielypacoamoroso.com/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block px-4 py-3 text-white font-bold hover:bg-[#ff0000] transition-colors"
+                    className="text-white font-bold hover:text-[#ff0000] transition-colors whitespace-nowrap"
                     style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
                   >
                     ARGENTINA
@@ -86,7 +89,7 @@ export default function Navigation() {
                     href="https://ca7rielypacoamoroso-merch.com/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block px-4 py-3 text-white font-bold hover:bg-[#ff0000] transition-colors border-t border-white/20"
+                    className="text-white font-bold hover:text-[#ff0000] transition-colors whitespace-nowrap"
                     style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
                   >
                     INTERNATIONAL
