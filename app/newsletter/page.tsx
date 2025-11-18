@@ -24,57 +24,66 @@ export default function Newsletter() {
       {/* Navigation Header */}
       <Navigation />
 
-      {/* Newsletter Text */}
-      <div
-        className="absolute left-0 right-0 text-center z-20 px-4 color-cycle-text md:static"
-        style={{
-          fontFamily: 'Dunbar Tall, Arial, sans-serif',
-          fontWeight: 900,
-          textTransform: 'uppercase',
-          letterSpacing: '0.02em'
-        }}
-      >
-        NEWSLETTER
+      {/* Newsletter Signup Component - Centered */}
+      <div className="absolute inset-0 flex items-center justify-center z-20 px-4 md:px-8 lg:px-12">
+        <div className="newsletter-container w-full max-w-md">
+          <form className="flex flex-col gap-4 sm:gap-6">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className="newsletter-input w-full px-4 py-3 sm:px-6 sm:py-4 text-base sm:text-lg bg-black/50 border-2 border-white text-white placeholder-white/70 focus:outline-none focus:border-red-500 transition-colors"
+              style={{
+                fontFamily: 'Dunbar Tall, Arial, sans-serif',
+                fontWeight: 500
+              }}
+            />
+            <button
+              type="submit"
+              className="newsletter-button w-full px-6 py-3 sm:px-8 sm:py-4 text-base sm:text-lg font-bold uppercase tracking-wider bg-white text-black hover:bg-black hover:text-white border-2 border-white transition-all duration-300"
+              style={{
+                fontFamily: 'Dunbar Tall, Arial, sans-serif',
+                fontWeight: 900,
+                letterSpacing: '0.05em'
+              }}
+            >
+              Subscribe
+            </button>
+          </form>
+        </div>
       </div>
 
-      {/* CSS for color cycle animation and responsive text */}
+      {/* CSS for responsive newsletter component */}
       <style jsx>{`
-        .color-cycle-text {
-          animation: colorCycle 4s infinite;
-          font-size: 24px;
-          top: 50%;
-          transform: translateY(-50%);
+        .newsletter-container {
+          animation: fadeIn 0.5s ease-in;
         }
 
-        @keyframes colorCycle {
-          0% {
-            color: #FF0000;
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
           }
-          25% {
-            color: #FF9500;
-          }
-          50% {
-            color: #FFE500;
-          }
-          75% {
-            color: #FFFBDA;
-          }
-          100% {
-            color: #FF0000;
+          to {
+            opacity: 1;
+            transform: translateY(0);
           }
         }
 
-        /* Tablet */
+        .newsletter-input::placeholder {
+          text-transform: uppercase;
+        }
+
+        /* Tablet adjustments */
         @media (min-width: 640px) {
-          .color-cycle-text {
-            font-size: 36px;
+          .newsletter-container {
+            max-width: 500px;
           }
         }
 
-        /* Desktop */
+        /* Desktop adjustments */
         @media (min-width: 1024px) {
-          .color-cycle-text {
-            font-size: 48px;
+          .newsletter-container {
+            max-width: 600px;
           }
         }
       `}</style>
