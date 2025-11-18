@@ -152,41 +152,41 @@ export default function Navigation() {
 
         {/* Mobile Menu Dropdown */}
         {isMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 animate-in slide-in-from-top">
-            <div className="flex flex-col gap-4">
+          <div className="md:hidden mt-4 pb-4 animate-in slide-in-from-top bg-[#ff0000] rounded-lg p-6">
+            <div className="flex flex-col gap-8 items-center">
               {/* Navigation Links */}
               <a
                 href="#tour"
-                className="text-white font-bold hover:text-[#ff0000] transition-colors"
-                style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
+                className="text-white font-bold hover:text-black transition-colors text-center"
+                style={{ fontSize: '28px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
                 onClick={() => setIsMenuOpen(false)}
               >
                 TOUR
               </a>
               <a
                 href="#newsletter"
-                className="text-white font-bold hover:text-[#ff0000] transition-colors"
-                style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
+                className="text-white font-bold hover:text-black transition-colors text-center"
+                style={{ fontSize: '28px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
                 onClick={() => setIsMenuOpen(false)}
               >
                 NEWSLETTER
               </a>
               <a
                 href="#store"
-                className="text-white font-bold hover:text-[#ff0000] transition-colors"
-                style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
+                className="text-white font-bold hover:text-black transition-colors text-center"
+                style={{ fontSize: '28px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
                 onClick={() => setIsMenuOpen(false)}
               >
                 STORE
               </a>
 
               {/* Social Icons */}
-              <div className="flex items-center gap-4 pt-2 border-t border-white/20">
+              <div className="flex items-center justify-center gap-4 pt-4 border-t border-white/20 w-full">
                 <a
                   href="https://open.spotify.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white hover:text-[#ff0000] transition-colors"
+                  className="text-white hover:text-black transition-colors"
                   aria-label="Spotify"
                 >
                   <SpotifyIcon />
@@ -195,7 +195,7 @@ export default function Navigation() {
                   href="https://instagram.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white hover:text-[#ff0000] transition-colors"
+                  className="text-white hover:text-black transition-colors"
                   aria-label="Instagram"
                 >
                   <InstagramIcon />
@@ -204,7 +204,7 @@ export default function Navigation() {
                   href="https://youtube.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white hover:text-[#ff0000] transition-colors"
+                  className="text-white hover:text-black transition-colors"
                   aria-label="YouTube"
                 >
                   <YouTubeIcon />
@@ -213,7 +213,7 @@ export default function Navigation() {
                   href="https://tiktok.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white hover:text-[#ff0000] transition-colors"
+                  className="text-white hover:text-black transition-colors"
                   aria-label="TikTok"
                 >
                   <TikTokIcon />
@@ -222,7 +222,7 @@ export default function Navigation() {
                   href="https://x.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white hover:text-[#ff0000] transition-colors"
+                  className="text-white hover:text-black transition-colors"
                   aria-label="X"
                 >
                   <XIcon />
