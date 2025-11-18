@@ -46,23 +46,16 @@ export default function Navigation() {
           {/* Left - Links */}
           <div className="flex items-center gap-4">
             <a
-              href="#tour"
-              className="text-white font-bold hover:opacity-70 transition-opacity"
-              style={{ fontSize: '14px', fontFamily: 'Lato Black, Arial, sans-serif' }}
-            >
-              TOUR
-            </a>
-            <a
               href="#newsletter"
               className="text-white font-bold hover:opacity-70 transition-opacity"
-              style={{ fontSize: '14px', fontFamily: 'Lato Black, Arial, sans-serif' }}
+              style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
             >
               NEWSLETTER
             </a>
             <a
               href="#store"
               className="text-white font-bold hover:opacity-70 transition-opacity"
-              style={{ fontSize: '14px', fontFamily: 'Lato Black, Arial, sans-serif' }}
+              style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
             >
               STORE
             </a>
@@ -71,7 +64,7 @@ export default function Navigation() {
           {/* Center - Artist Name */}
           <div
             className="absolute left-1/2 transform -translate-x-1/2 text-white font-bold"
-            style={{ fontSize: '14px', fontFamily: 'Lato Black, Arial, sans-serif' }}
+            style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
           >
             CA7RIEL & PACO AMOROSO
           </div>
@@ -131,7 +124,7 @@ export default function Navigation() {
           {/* Left - Artist Name */}
           <div
             className="text-white font-bold"
-            style={{ fontSize: '12px', fontFamily: 'Lato Black, Arial, sans-serif' }}
+            style={{ fontSize: '12px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
           >
             CA7RIEL & PACO AMOROSO
           </div>
@@ -156,17 +149,9 @@ export default function Navigation() {
             <div className="flex flex-col gap-4">
               {/* Navigation Links */}
               <a
-                href="#tour"
-                className="text-white font-bold hover:opacity-70 transition-opacity"
-                style={{ fontSize: '14px', fontFamily: 'Lato Black, Arial, sans-serif' }}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                TOUR
-              </a>
-              <a
                 href="#newsletter"
                 className="text-white font-bold hover:opacity-70 transition-opacity"
-                style={{ fontSize: '14px', fontFamily: 'Lato Black, Arial, sans-serif' }}
+                style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
                 onClick={() => setIsMenuOpen(false)}
               >
                 NEWSLETTER
@@ -174,7 +159,7 @@ export default function Navigation() {
               <a
                 href="#store"
                 className="text-white font-bold hover:opacity-70 transition-opacity"
-                style={{ fontSize: '14px', fontFamily: 'Lato Black, Arial, sans-serif' }}
+                style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
                 onClick={() => setIsMenuOpen(false)}
               >
                 STORE
