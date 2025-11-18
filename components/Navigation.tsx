@@ -35,6 +35,7 @@ const XIcon = () => (
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isStoreDropdownOpen, setIsStoreDropdownOpen] = useState(false)
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
 
@@ -59,13 +60,40 @@ export default function Navigation() {
             >
               NEWSLETTER
             </a>
-            <a
-              href="#store"
-              className="text-white font-bold hover:text-[#ff0000] transition-colors"
-              style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
+            <div
+              className="relative"
+              onMouseEnter={() => setIsStoreDropdownOpen(true)}
+              onMouseLeave={() => setIsStoreDropdownOpen(false)}
             >
-              STORE
-            </a>
+              <button
+                className="text-white font-bold hover:text-[#ff0000] transition-colors"
+                style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
+              >
+                STORE
+              </button>
+              {isStoreDropdownOpen && (
+                <div className="absolute top-full left-0 mt-2 bg-black border-2 border-white rounded-lg overflow-hidden min-w-[200px] z-50">
+                  <a
+                    href="https://tienda.ca7rielypacoamoroso.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block px-4 py-3 text-white font-bold hover:bg-[#ff0000] transition-colors"
+                    style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
+                  >
+                    ARGENTINA
+                  </a>
+                  <a
+                    href="https://ca7rielypacoamoroso-merch.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block px-4 py-3 text-white font-bold hover:bg-[#ff0000] transition-colors border-t border-white/20"
+                    style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
+                  >
+                    INTERNATIONAL
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Center - Artist Name */}
@@ -171,14 +199,34 @@ export default function Navigation() {
               >
                 NEWSLETTER
               </a>
-              <a
-                href="#store"
-                className="text-white font-bold hover:text-black transition-colors text-center"
-                style={{ fontSize: '28px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                STORE
-              </a>
+              <div className="text-center">
+                <div
+                  className="text-white font-bold text-center mb-4"
+                  style={{ fontSize: '28px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
+                >
+                  STORE
+                </div>
+                <a
+                  href="https://tienda.ca7rielypacoamoroso.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-white font-bold hover:text-black transition-colors text-center mb-2"
+                  style={{ fontSize: '18px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  ARGENTINA
+                </a>
+                <a
+                  href="https://ca7rielypacoamoroso-merch.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-white font-bold hover:text-black transition-colors text-center"
+                  style={{ fontSize: '18px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  INTERNATIONAL
+                </a>
+              </div>
 
               {/* Social Icons */}
               <div className="flex items-center justify-center gap-4 pt-4 border-t border-white/20 w-full">
