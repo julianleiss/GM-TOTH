@@ -142,10 +142,10 @@ export default function Navigation() {
             className="text-white p-2 focus:outline-none"
             aria-label="Toggle menu"
           >
-            <div className="w-5 h-4 flex flex-col justify-between">
-              <span className={`block h-0.5 w-full bg-white transition-all ${isMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
-              <span className={`block h-0.5 w-full bg-white transition-all ${isMenuOpen ? 'opacity-0' : ''}`}></span>
-              <span className={`block h-0.5 w-full bg-white transition-all ${isMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
+            <div className="w-6 h-6 flex flex-col items-center justify-center gap-[5px] relative">
+              <span className={`block h-[2px] w-6 bg-white transition-all duration-300 ease-in-out absolute ${isMenuOpen ? 'rotate-45 translate-y-0' : 'translate-y-[-8px]'}`}></span>
+              <span className={`block h-[2px] w-6 bg-white transition-all duration-300 ease-in-out ${isMenuOpen ? 'opacity-0 scale-0' : 'opacity-100 scale-100'}`}></span>
+              <span className={`block h-[2px] w-6 bg-white transition-all duration-300 ease-in-out absolute ${isMenuOpen ? '-rotate-45 translate-y-0' : 'translate-y-[8px]'}`}></span>
             </div>
           </button>
         </div>
