@@ -68,6 +68,8 @@ export default function HomeV2() {
         @media (min-width: 640px) {
           .color-cycle-text {
             font-size: 36px;
+            top: 120px;
+            transform: none;
           }
         }
 
