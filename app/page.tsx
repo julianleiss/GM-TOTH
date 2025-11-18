@@ -29,7 +29,7 @@ export default function Home() {
       <div className="fixed inset-0 w-full h-full z-0">
         {/* Desktop & Tablet Background */}
         <img
-          src="/images/BG-DESK-001.gif"
+          src="/images/BG-DESK-003.gif"
           alt="Background"
           className="hidden md:block w-full h-full object-cover glitch-hover"
         />
