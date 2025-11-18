@@ -1,6 +1,7 @@
 'use client'
 
 import Navigation from '@/components/Navigation'
+import Script from 'next/script'
 
 export default function Newsletter() {
   return (
@@ -25,9 +26,9 @@ export default function Newsletter() {
       <Navigation />
 
       {/* Laylo Newsletter Embed - Centered */}
+      <Script src="https://embed.laylo.com/laylo-sdk.js" strategy="afterInteractive" />
       <div className="absolute inset-0 flex items-center justify-center z-20 px-4 overflow-y-auto">
         <div style={{ maxWidth: '1000px', margin: 'auto', width: '100%' }}>
-          <script src="https://embed.laylo.com/laylo-sdk.js"></script>
           <iframe
             id="laylo-drop-xN8Ke"
             frameBorder="0"
