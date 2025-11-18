@@ -75,7 +75,7 @@ export default function Navigation() {
                 </svg>
               </button>
               {isStoreDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 flex flex-col gap-2">
+                <div className="absolute top-full left-0 pt-4 pb-2 flex flex-col gap-2">
                   <a
                     href="https://tienda.ca7rielypacoamoroso.com/"
                     target="_blank"
