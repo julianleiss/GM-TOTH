@@ -26,11 +26,10 @@ export default function HomeV2() {
 
       {/* Site Under Destruction Text */}
       <div
-        className="absolute left-0 right-0 text-center z-20 px-4 blinking-text glitch-text-hover"
+        className="absolute left-0 right-0 text-center z-20 px-4 color-cycle-text glitch-text-hover"
         style={{
           top: '200px',
           fontFamily: 'Dunbar Tall, Arial, sans-serif',
-          color: '#FF0000',
           fontWeight: 900,
           textTransform: 'uppercase',
           letterSpacing: '0.02em'
@@ -39,32 +38,41 @@ export default function HomeV2() {
         SITE UNDER DESTRUCTION
       </div>
 
-      {/* CSS for blinking animation and responsive text */}
+      {/* CSS for color cycle animation and responsive text */}
       <style jsx>{`
-        .blinking-text {
-          animation: blink 1s infinite;
+        .color-cycle-text {
+          animation: colorCycle 4s infinite;
           font-size: 24px;
         }
 
-        @keyframes blink {
-          0%, 49% {
-            opacity: 1;
+        @keyframes colorCycle {
+          0% {
+            color: #FF0000;
           }
-          50%, 100% {
-            opacity: 0;
+          25% {
+            color: #FF9500;
+          }
+          50% {
+            color: #FFE500;
+          }
+          75% {
+            color: #FFFBDA;
+          }
+          100% {
+            color: #FF0000;
           }
         }
 
         /* Tablet */
         @media (min-width: 640px) {
-          .blinking-text {
+          .color-cycle-text {
             font-size: 36px;
           }
         }
 
         /* Desktop */
         @media (min-width: 1024px) {
-          .blinking-text {
+          .color-cycle-text {
             font-size: 48px;
           }
         }
