@@ -76,7 +76,7 @@ export default function Newsletter() {
           font-weight: 500;
           text-transform: uppercase;
           letter-spacing: 0.05em;
-          background: transparent;
+          background: #000000;
           border: 2px solid #FFFFFF;
           color: #FFFFFF;
           outline: none;
