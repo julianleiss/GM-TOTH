@@ -34,7 +34,7 @@ export default function Newsletter() {
             frameBorder="0"
             scrolling="no"
             allow="web-share"
-            allowTransparency="true"
+            allowTransparency={true}
             style={{
               width: '100%',
               height: '700px',
