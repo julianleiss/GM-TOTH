@@ -94,7 +94,7 @@ export default function Navigation() {
 
           {/* Center - Artist Name */}
           <div
-            className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white font-bold"
+            className="absolute left-1/2 transform -translate-x-1/2 text-white font-bold"
             style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
           >
             CA7RIEL & PACO AMOROSO
