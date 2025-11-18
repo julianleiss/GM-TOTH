@@ -41,7 +41,7 @@ export default function Navigation() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-transparent">
-      <div className="w-full px-4 md:px-8 py-4">
+      <div className="w-full px-6 pt-6">
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center justify-between">
           {/* Left - Links */}
@@ -94,7 +94,7 @@ export default function Navigation() {
 
           {/* Center - Artist Name */}
           <div
-            className="absolute left-1/2 transform -translate-x-1/2 text-white font-bold"
+            className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white font-bold"
             style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
           >
             CA7RIEL & PACO AMOROSO
