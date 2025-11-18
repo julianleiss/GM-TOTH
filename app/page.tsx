@@ -1,28 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { SceneManager } from '@/components/SceneManager'
-import { registerAllScenes } from '@/lib/registerScenes'
+import Navigation from '@/components/Navigation'
 
-export default function Home() {
-  const [currentSceneId, setCurrentSceneId] = useState<string>('frisbee-disc-throw')
-  const [isReady, setIsReady] = useState(false)
-
-  // Register all scenes on mount
-  useEffect(() => {
-    registerAllScenes()
-    setIsReady(true)
-  }, [])
-
-  // Wait for scenes to be registered
-  if (!isReady) {
-    return (
-      <main className="w-screen h-screen bg-black flex items-center justify-center">
-        <div className="text-white">Loading...</div>
-      </main>
-    )
-  }
-
+export default function HomeV2() {
   return (
     <main className="w-screen h-screen overflow-hidden relative">
       {/* Background GIFs - Full Viewport */}
@@ -33,28 +13,73 @@ export default function Home() {
           alt="Background"
           className="hidden md:block w-full h-full object-cover"
         />
-        {/* Mobile Background - object-contain to show full GIF */}
+        {/* Mobile Background - object-cover to fill screen */}
         <img
           src="/images/BG-MOBILE-001.gif"
           alt="Background"
-          className="block md:hidden w-full h-full object-contain"
+          className="block md:hidden w-full h-full object-cover"
         />
       </div>
 
-      {/* Scene selector hidden - only one scene available */}
+      {/* Navigation Header */}
+      <Navigation />
 
-      {/* 3D Scene - full screen */}
-      <div className="relative z-10 w-full h-full">
-        <SceneManager
-          initialSceneId={currentSceneId}
-          onSceneChange={setCurrentSceneId}
-          transition={{
-            type: 'fade',
-            duration: 500,
-            easing: 'ease-in-out',
-          }}
-        />
+      {/* Site Under Destruction Text */}
+      <div
+        className="absolute left-0 right-0 text-center z-20 px-4 color-cycle-text"
+        style={{
+          fontFamily: 'Dunbar Tall, Arial, sans-serif',
+          fontWeight: 900,
+          textTransform: 'uppercase',
+          letterSpacing: '0.02em'
+        }}
+      >
+        SITE UNDER DESTRUCTION
       </div>
+
+      {/* CSS for color cycle animation and responsive text */}
+      <style jsx>{`
+        .color-cycle-text {
+          animation: colorCycle 4s infinite;
+          font-size: 24px;
+          top: 50%;
+          transform: translateY(-50%);
+        }
+
+        @keyframes colorCycle {
+          0% {
+            color: #FF0000;
+          }
+          25% {
+            color: #FF9500;
+          }
+          50% {
+            color: #FFE500;
+          }
+          75% {
+            color: #FFFBDA;
+          }
+          100% {
+            color: #FF0000;
+          }
+        }
+
+        /* Tablet */
+        @media (min-width: 640px) {
+          .color-cycle-text {
+            font-size: 36px;
+          }
+        }
+
+        /* Desktop */
+        @media (min-width: 1024px) {
+          .color-cycle-text {
+            font-size: 48px;
+            top: 200px;
+            transform: none;
+          }
+        }
+      `}</style>
     </main>
   )
 }
