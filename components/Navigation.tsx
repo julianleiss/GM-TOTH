@@ -47,13 +47,6 @@ export default function Navigation() {
           {/* Left - Links */}
           <div className="flex items-center gap-4">
             <a
-              href="#tour"
-              className="text-white font-bold hover:text-[#ff0000] transition-colors"
-              style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
-            >
-              TOUR
-            </a>
-            <a
               href="/newsletter"
               className="text-white font-bold hover:text-[#ff0000] transition-colors"
               style={{ fontSize: '14px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
@@ -187,14 +180,6 @@ export default function Navigation() {
             <div className="flex flex-col gap-8 items-center">
               {/* Navigation Links */}
               <a
-                href="#tour"
-                className="text-white font-bold hover:text-black transition-colors text-center"
-                style={{ fontSize: '28px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                TOUR
-              </a>
-              <a
                 href="/newsletter"
                 className="text-white font-bold hover:text-black transition-colors text-center"
                 style={{ fontSize: '28px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
@@ -202,34 +187,26 @@ export default function Navigation() {
               >
                 NEWSLETTER
               </a>
-              <div className="text-center">
-                <div
-                  className="text-white font-bold text-center mb-4"
-                  style={{ fontSize: '28px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
-                >
-                  STORE
-                </div>
-                <a
-                  href="https://tienda.ca7rielypacoamoroso.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block text-white font-bold hover:text-black transition-colors text-center mb-2"
-                  style={{ fontSize: '18px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  ARGENTINA
-                </a>
-                <a
-                  href="https://ca7rielypacoamoroso-merch.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block text-white font-bold hover:text-black transition-colors text-center"
-                  style={{ fontSize: '18px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  INTERNATIONAL
-                </a>
-              </div>
+              <a
+                href="https://tienda.ca7rielypacoamoroso.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white font-bold hover:text-black transition-colors text-center"
+                style={{ fontSize: '28px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                ARGENTINA STORE
+              </a>
+              <a
+                href="https://ca7rielypacoamoroso-merch.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white font-bold hover:text-black transition-colors text-center"
+                style={{ fontSize: '28px', fontFamily: 'Dunbar Tall, Arial, sans-serif' }}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                INTERNATIONAL STORE
+              </a>
 
               {/* Social Icons */}
               <div className="flex items-center justify-center gap-4 pt-4 border-t border-white/20 w-full">
